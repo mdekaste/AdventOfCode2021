@@ -17,11 +17,12 @@ object Day10 : Challenge("--- Day 10: Adapter Array ---") {
     val parsed = input.lines().map(String::toInt).toSortedSet()
 
     override fun part1() = parsed
-        .fold(mutableListOf<Int>() to 0) { (list, prev), cur -> list.apply { add(cur - prev) } to cur }
+        .fold(IntArray(3) { 0 } to 0) { (list, prev), cur ->
+            list[cur - prev - 1]++
+            list to cur
+        }
         .first
-        .groupingBy { it }
-        .eachCount()
-        .let { it.getValue(1) * (it.getValue(3) + 1) }
+        .let { it[0] * (it[2] + 1) }
 
     override fun part2(): Any? {
         val lastValue = parsed.last() + 3
