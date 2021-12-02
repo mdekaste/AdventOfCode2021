@@ -32,7 +32,7 @@ object Day2 : Challenge("--- Day 2: Dive! ---") {
                 "down" -> aim += amount
                 "forward" -> {
                     horPos += amount
-                    depth += (aim * amount)
+                    depth += aim * amount
                 }
             }
         }
