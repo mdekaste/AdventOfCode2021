@@ -1,7 +1,6 @@
 package year2021.day3
 
 import Challenge
-import java.util.*
 
 fun main() {
     Day3.printSolutions()
@@ -13,8 +12,7 @@ object Day3 : Challenge() {
 
     override fun part1() = (0 until sizeOfNumber)
         .map { index -> parsed.partition { it[index] == '1' } }
-        .fold("") { acc, (first, second) -> acc + if (first.size > second.size) "1" else "0" }
-        .toInt(2)
+        .fold(0) { acc, (first, second) -> acc * 2 + if (first.size > second.size) 1 else 0 }
         .let { it * (it.inv() and ((1 shl sizeOfNumber) - 1)) }
 
     override fun part2() = findRating(parsed, false).toInt(2) * findRating(parsed, true).toInt(2)
