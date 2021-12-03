@@ -8,49 +8,25 @@ fun main() {
 }
 
 object Day3 : Challenge() {
-    val parsed = input.lines().map { line ->
-        line.map { it.digitToInt() }
-            .toIntArray()
-    }
-    val sizeOfNumber = parsed[0].size
+    private val parsed = input.lines()
+    private val sizeOfNumber = parsed[0].length
 
-    override fun part1(): Any? {
-        val gammaRate = parsed.reduce { source, toAdd ->
-            IntArray(sizeOfNumber) { source[it] + (toAdd[it] * 2 - 1) }
-        }.map { if (it > 0) 1 else 0 }
-            .reduce { first, second -> first * 2 + second }
-        val epsilonRate = gammaRate.inv() and ((1 shl sizeOfNumber) - 1)
-        return gammaRate * epsilonRate
-    }
+    override fun part1() = (0 until sizeOfNumber)
+        .map { index -> parsed.partition { it[index] == '1' } }
+        .fold("") { acc, (first, second) -> acc + if (first.size > second.size) "1" else "0" }
+        .toInt(2)
+        .let { it * (it.inv() and ((1 shl sizeOfNumber) - 1)) }
 
-    override fun part2(): Any? {
-        val oxygenRating = findOxygenRating(parsed).reduce { acc, i -> acc * 2 + i }
-        val co2Rating = findCO2scrubberRating(parsed).reduce { acc, i -> acc * 2 + i }
-        return oxygenRating * co2Rating
+    override fun part2() = findRating(parsed, false).toInt(2) * findRating(parsed, true).toInt(2)
+
+    fun findRating(list: List<String>, isC02scrubber: Boolean, index: Int = 0): String = when {
+        index == sizeOfNumber -> list.first()
+        else -> list.groupBy { it[index] }.values
+            .maxWithOrNull(comparator(index, isC02scrubber))
+            .let { findRating(it!!, isC02scrubber, index + 1) }
     }
 
-    fun findOxygenRating(list: List<IntArray>, indexAt: Int = 0): IntArray {
-        return when {
-            indexAt == sizeOfNumber -> list.first()
-            else -> list.groupBy { it[indexAt] }
-                .values
-                .maxWithOrNull(compareBy<List<IntArray>> { it.size }.thenBy { it[0][indexAt] })
-                .let { findOxygenRating(it!!, indexAt + 1) }
-        }
-    }
-
-    fun findCO2scrubberRating(list: List<IntArray>, indexAt: Int = 0): IntArray {
-        return when {
-            indexAt == sizeOfNumber -> list.first()
-            else -> list.groupBy { it[indexAt] }
-                .values
-                .minWithOrNull(compareBy<List<IntArray>> { it.size }.thenBy { it[0][indexAt] })
-                .let { findCO2scrubberRating(it!!, indexAt + 1) }
-        }
-    }
-
-    @JvmInline
-    value class Bits(val value: Int) {
-        fun flipAllBits() = Bits(value.inv())
-    }
+    fun comparator(index: Int, reversed: Boolean) = compareBy<List<String>> { it.size }
+        .thenBy { it[0][index] }
+        .let { if (reversed) it.reversed() else it }
 }
