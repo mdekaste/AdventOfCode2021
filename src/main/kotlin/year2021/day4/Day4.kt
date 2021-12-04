@@ -6,75 +6,49 @@ fun main() {
     Day4.printSolutions()
 }
 
-typealias Board = List<Array<Int?>>
-typealias Input = Pair<List<Int>, MutableList<Board>>
 object Day4 : Challenge() {
-    val parsed: Input = input.split("\r\n\r\n", limit = 2)
-        .let { (drawn, boards) ->
-            drawn.split(",").map(String::toInt) to
-                boards.split("\r\n\r\n").map { board ->
-                    board.lines().map {
-                        it.trim().split("""\s+""".toRegex()).map(String::toInt).toTypedArray<Int?>()
-                    }
-                }.toMutableList()
-        }
-
-    fun Board.checkRowsAndCols(): Boolean {
-        checkRows@for (y in 0..4) {
-            for (x in 0..4) {
-                if (this[y][x] != null)
-                    continue@checkRows
+    val parsed = input.split("\r\n\r\n").let { list ->
+        list.first().split(",").map(String::toInt) to
+            list.drop(1).map {
+                it.split("""\s+""".toRegex()).mapNotNull(String::toIntOrNull)
             }
-            return true
-        }
-        checkCols@for (x in 0..4) {
-            for (y in 0..4) {
-                if (this[y][x] != null)
-                    continue@checkCols
-            }
-            return true
-        }
-        return false
     }
 
-    fun Board.removeNumber(number: Int) {
-        for (y in 0..4) {
-            for (x in 0..4) {
-                if (this[y][x] == number)
-                    this[y][x] = null
-            }
-        }
-    }
+    override fun part1() = drawAndRun().first()
 
-    fun Board.score(number: Int) = number * this.flatMap { it.filterNotNull() }.sum()
+    override fun part2() = drawAndRun().last()
 
-    override fun part1(): Any? {
-        for (drawnNumber in parsed.first) {
-            for (board in parsed.second) {
-                board.removeNumber(drawnNumber)
-                if (board.checkRowsAndCols()) {
-                    return board.score(drawnNumber)
+    fun drawAndRun() = sequence {
+        val drawns = parsed.first
+        val boards = parsed.second.map { it.toMutableList<Int?>() }.toMutableList()
+        for (drawn in drawns) {
+            val iter = boards.listIterator()
+            while (iter.hasNext()) {
+                val board = iter.next()
+                board.removeDrawn(drawn)
+                if (board.hasWon()) {
+                    yield(board.score(drawn))
+                    iter.remove()
                 }
             }
         }
-        error("")
-    }
-
-    override fun part2(): Any? {
-        var boardWonCount = 0
-        for (drawnNumber in parsed.first) {
-            for (board in parsed.second) {
-                if(board.checkRowsAndCols())
-                    continue
-                board.removeNumber(drawnNumber)
-                if (board.checkRowsAndCols()) {
-                    boardWonCount++
-                    if(boardWonCount == parsed.second.size - 1){
-                        return board.score(drawnNumber)
-                    }
-                }
-            }
-        }
-        error("")
     }
 }
+
+fun MutableList<Int?>.removeDrawn(number: Int) = indexOf(number).takeIf { it >= 0 }?.let { this[it] = null }
+fun List<Int?>.hasWon(): Boolean = with(chunked(5)) {
+    rows@for (y in 0..4) {
+        for (x in 0..4) {
+            if (this[y][x] != null) continue@rows
+        }
+        return true
+    }
+    cols@for (x in 0..4) {
+        for (y in 0..4) {
+            if (this[y][x] != null) continue@cols
+        }
+        return true
+    }
+    return false
+}
+fun List<Int?>.score(number: Int) = filterNotNull().sum() * number
