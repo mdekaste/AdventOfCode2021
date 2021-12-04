@@ -20,14 +20,14 @@ object Day4 : Challenge() {
 
     fun drawAndRun() = sequence {
         val drawns = parsed.first
-        val boards = parsed.second.map { it.toMutableList<Int?>() }.toMutableList()
+        val bingoCards = parsed.second.map { it.toMutableList<Int?>() }.toMutableList()
         for (drawn in drawns) {
-            val iter = boards.listIterator()
+            val iter = bingoCards.listIterator()
             while (iter.hasNext()) {
-                val board = iter.next()
-                board.removeDrawn(drawn)
-                if (board.hasWon()) {
-                    yield(board.score(drawn))
+                val bingoCard = iter.next()
+                bingoCard.removeDrawn(drawn)
+                if (bingoCard.hasWon()) {
+                    yield(bingoCard.score(drawn))
                     iter.remove()
                 }
             }
