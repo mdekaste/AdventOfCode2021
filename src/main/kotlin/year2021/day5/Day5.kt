@@ -11,7 +11,7 @@ typealias Point = Pair<Int, Int>
 operator fun Point.rangeTo(other: Point): List<Point>{
     val yDiv = other.first - first
     val xDiv = other.second - second
-    return List(maxOf(abs(yDiv), abs(xDiv)) + 1) { index -> Point(first + yDiv.sign * index, second + xDiv.sign * index) }
+    return List(maxOf(abs(yDiv), abs(xDiv)) + 1) { index -> first + yDiv.sign * index to second + xDiv.sign * index }
 }
 
 object Day5 : Challenge("--- Day 5: Hydrothermal Venture ---") {
