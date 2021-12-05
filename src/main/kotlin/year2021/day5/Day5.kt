@@ -12,7 +12,7 @@ object Day5 : Challenge("--- Day 5: Hydrothermal Venture ---") {
     override fun part2() = solve(diagonals = true)
 
     private fun solve(diagonals: Boolean) = parsed
-        .filter { (x1, y1, x2, y2) -> if (diagonals) true else x1 == x2 || y1 == y2 }
+        .filter { (x1, y1, x2, y2) -> diagonals || x1 == x2 || y1 == y2 }
         .flatMap { (x1, y1, x2, y2) -> Point(y1, x1)..Point(y2, x2) }
         .groupingBy { it }.eachCount().values.count { it > 1 }
 }
