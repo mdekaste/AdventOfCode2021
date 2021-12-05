@@ -5,46 +5,16 @@ fun main() {
     Day5.printSolutions()
 }
 
-typealias Grid = Map<Point, Int>
 object Day5 : Challenge("--- Day 5: Hydrothermal Venture ---") {
     val parsed = input.split("""[^(\d+)]+""".toRegex()).map(String::toInt).chunked(4)
 
-    override fun part1(): Any? {
-        val map = mutableMapOf<Point, Int>()
-        for ((x1, y1, x2, y2) in parsed.filter { (x1, y1, x2, y2) -> x1 == x2 || y1 == y2 }) {
-            for (y in minOf(y1, y2)..maxOf(y1, y2))
-                for (x in minOf(x1, x2)..maxOf(x1, x2))
-                    map.compute(Point(y, x)) { _, amount -> amount?.plus(1) ?: 1 }
-        }
-        return map.values.count { it > 1 }
-    }
+    override fun part1() = solve(diagonals = false)
+    override fun part2() = solve(diagonals = true)
 
-    override fun part2(): Any? {
-        val map = mutableMapOf<Point, Int>()
-        parsed.flatMap { (x1, y1, x2, y2) -> Point(y1, x1)..Point(y2, x2) }.forEach { point ->
-            map.compute(point) { _, amount -> amount?.plus(1) ?: 1 }
-        }
-        printMap(map)
-        return map.values.count { it > 1 }
-    }
-
-    fun printMap(grid: Grid) {
-        val minY = grid.keys.minOf { it.y }
-        val maxY = grid.keys.maxOf { it.y }
-        val minX = grid.keys.minOf { it.x }
-        val maxX = grid.keys.maxOf { it.x }
-        for (y in minY..maxY) {
-            for (x in minX..maxX) {
-                print(
-                    when (val point = grid[Point(y, x)]) {
-                        null -> '.'
-                        else -> point
-                    }
-                )
-            }
-            println()
-        }
-    }
+    private fun solve(diagonals: Boolean) = parsed
+        .filter { (x1, y1, x2, y2) -> if (diagonals) true else x1 == x2 || y1 == y2 }
+        .flatMap { (x1, y1, x2, y2) -> Point(y1, x1)..Point(y2, x2) }
+        .groupingBy { it }.eachCount().values.count { it > 1 }
 }
 
 data class Point(val y: Int, val x: Int) : Comparable<Point> {
