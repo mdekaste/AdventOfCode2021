@@ -22,7 +22,7 @@ object Day4 : Challenge() {
         val drawns = parsed.first
         val bingoCards = parsed.second.map { it.toMutableList<Int?>() }.toMutableList()
         for (drawn in drawns) {
-            val iter = bingoCards.listIterator()
+            val iter = bingoCards.iterator()
             while (iter.hasNext()) {
                 val bingoCard = iter.next()
                 bingoCard.removeDrawn(drawn)
@@ -35,7 +35,15 @@ object Day4 : Challenge() {
     }
 }
 
-fun MutableList<Int?>.removeDrawn(number: Int) = indexOf(number).takeIf { it >= 0 }?.let { this[it] = null }
+fun MutableList<Int?>.removeDrawn(number: Int) {
+    for ((index, value) in withIndex()) {
+        if (value == number) {
+            set(index, null)
+            return
+        }
+    }
+}
+
 fun List<Int?>.hasWon(): Boolean = with(chunked(5)) {
     rows@for (y in 0..4) {
         for (x in 0..4) {
@@ -51,4 +59,5 @@ fun List<Int?>.hasWon(): Boolean = with(chunked(5)) {
     }
     return false
 }
+
 fun List<Int?>.score(number: Int) = filterNotNull().sum() * number
