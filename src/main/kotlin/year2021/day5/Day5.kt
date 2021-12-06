@@ -1,7 +1,5 @@
 package year2021.day5
 import Challenge
-import java.awt.geom.Line2D
-import javax.sound.sampled.Line
 import kotlin.math.abs
 import kotlin.math.sign
 
@@ -10,7 +8,7 @@ fun main() {
 }
 
 typealias Point = Pair<Int, Int>
-operator fun Point.rangeTo(other: Point): List<Point>{
+operator fun Point.rangeTo(other: Point): List<Point> {
     val yDiv = other.first - first
     val xDiv = other.second - second
     val size = maxOf(abs(yDiv), abs(xDiv)) + 1

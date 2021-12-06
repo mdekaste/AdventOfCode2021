@@ -11,10 +11,9 @@ object Day6 : Challenge("--- Day 6: Lanternfish ---") {
     val parsed = input.split(",").map(String::toInt)
 
     override fun part1() = solve(80)
-
     override fun part2() = solve(256)
 
-    fun solve(days: Int): Long = parsed
+    private fun solve(days: Int): Long = parsed
         .groupingBy { it }
         .eachCount()
         .let { MutableList(9) { index -> it[index]?.toLong() ?: 0L } }

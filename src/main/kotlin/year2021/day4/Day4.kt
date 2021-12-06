@@ -15,7 +15,6 @@ object Day4 : Challenge() {
     }
 
     override fun part1() = drawAndRun().first()
-
     override fun part2() = drawAndRun().last()
 
     fun drawAndRun() = sequence {
