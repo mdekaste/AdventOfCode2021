@@ -16,8 +16,8 @@ object Day9 : Challenge("--- Day 9: Smoke Basin ---") {
     override fun part2() = localMinima.map(Tile::sizeOfBasin).sortedDescending().let { (a, b, c) -> a * b * c }
 
     data class Tile(val y: Int, val x: Int, val height: Int) {
-        fun neighbours() = listOf(y - 1 to x, y + 1 to x, y to x - 1, y to x + 1).mapNotNull(parsed::get)
-        fun isLocalMinima() = neighbours().all { height < it.height }
+        private val neighbours by lazy { listOf(y - 1 to x, y + 1 to x, y to x - 1, y to x + 1).mapNotNull(parsed::get) }
+        fun isLocalMinima() = neighbours.all { height < it.height }
         fun sizeOfBasin() = buildSet {
             add(this@Tile)
             repeat(9 - height) {
