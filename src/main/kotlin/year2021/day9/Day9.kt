@@ -2,7 +2,7 @@ package year2021.day9
 
 import Challenge
 
-fun main() = Day9.printSolutions()
+fun main() = Day9.printMeasure()
 
 object Day9 : Challenge() {
     val parsed = input.lines().withIndex().flatMap { (y, line) ->
@@ -11,12 +11,14 @@ object Day9 : Challenge() {
         }
     }.associateBy { (y, x, _) -> y to x }
 
-    override fun part1() = parsed.values
+    private val localMinima = parsed
+        .values
         .filter(Tile::isLocalMinima)
+
+    override fun part1() = localMinima
         .sumOf { it.height + 1 }
 
-    override fun part2() = parsed.values
-        .filter(Tile::isLocalMinima)
+    override fun part2() = localMinima
         .map(Tile::sizeOfBasin)
         .sortedDescending()
         .let { (a, b, c) -> a * b * c }
