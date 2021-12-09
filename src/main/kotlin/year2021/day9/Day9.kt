@@ -4,7 +4,7 @@ import Challenge
 
 fun main() = Day9.printMeasure()
 
-object Day9 : Challenge() {
+object Day9 : Challenge("--- Day 9: Smoke Basin ---") {
     private val parsed = input.lines().withIndex().flatMap { (y, line) ->
         line.withIndex().map { (x, char) ->
             Tile(y, x, char.digitToInt())
@@ -18,7 +18,8 @@ object Day9 : Challenge() {
     data class Tile(val y: Int, val x: Int, val height: Int) {
         fun neighbours() = listOf(y - 1 to x, y + 1 to x, y to x - 1, y to x + 1).mapNotNull(parsed::get)
         fun isLocalMinima() = neighbours().all { height < it.height }
-        fun sizeOfBasin() = mutableSetOf(this).apply {
+        fun sizeOfBasin() = buildSet {
+            add(this@Tile)
             repeat(9 - height) {
                 addAll(flatMap(Tile::neighbours).filter { it.height < 9 })
             }
