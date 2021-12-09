@@ -5,46 +5,28 @@ import Challenge
 fun main() = Day9.printSolutions()
 
 object Day9 : Challenge() {
-    
     val parsed = input.lines().withIndex().flatMap { (y, line) ->
         line.withIndex().map { (x, char) ->
-            listOf(y, x, char.digitToInt())
+            Tile(y, x, char.digitToInt())
         }
-    }.associateBy({ (y, x, _) -> y to x }, { (_, _, height) -> height })
-        .withDefault { Integer.MAX_VALUE }
+    }.associateBy { (y, x, _) -> y to x }
 
-    override fun part1(): Any? {
-        return parsed.keys.mapNotNull { (y, x) ->
-            parsed.getValue(y to x).takeIf {
-                it < parsed.getValue(y - 1 to x) &&
-                    it < parsed.getValue(y + 1 to x) &&
-                    it < parsed.getValue(y to x - 1) &&
-                    it < parsed.getValue(y to x + 1)
-            }
-        }.sumOf { it + 1 }
-    }
+    override fun part1() = parsed.values
+        .filter(Tile::isLocalMinima)
+        .sumOf { it.height + 1 }
 
-    override fun part2(): Any? {
-        return parsed.keys.filter { (y,x) ->
-            parsed.getValue(y to x).let { value ->
-                (y to x).neighbours().all{
-                    value < parsed.getValue(it)
-                }
-            }
-        }.map { (y, x) -> grow(y, x) }
-            .sortedDescending().let { (f, s, t) -> f * s * t }
-    }
+    override fun part2() = parsed.values
+        .filter(Tile::isLocalMinima)
+        .map(Tile::sizeOfBasin)
+        .sortedDescending()
+        .let { (a, b, c) -> a * b * c }
 
-    fun grow(y: Int, x: Int) : Int {
-        var points = mutableSetOf(y to x)
-        val height = parsed.getValue(y to x) + 1
-        for(curHeight in height until 9){
-            val oPoints = points.flatMap(Point::neighbours).filter { parsed.getValue(it) <= curHeight }
-            points.addAll(oPoints)
-        }
-        return points.size
+    data class Tile(val y: Int, val x: Int, val height: Int) {
+        fun neighbours() = listOf(y - 1 to x, y + 1 to x, y to x - 1, y to x + 1).mapNotNull(parsed::get)
+        fun isLocalMinima() = neighbours().all { height < it.height }
+        fun sizeOfBasin() = (height until 9)
+            .fold(setOf(this)) { set, _ ->
+                set + set.flatMap(Tile::neighbours).filter { it.height < 9 }
+            }.size
     }
 }
-
-typealias Point = Pair<Int, Int>
-fun Point.neighbours() = listOf(first - 1 to second, first + 1 to second, first to second - 1, first to second + 1)
