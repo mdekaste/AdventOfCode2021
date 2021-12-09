@@ -18,9 +18,10 @@ object Day9 : Challenge() {
     data class Tile(val y: Int, val x: Int, val height: Int) {
         fun neighbours() = listOf(y - 1 to x, y + 1 to x, y to x - 1, y to x + 1).mapNotNull(parsed::get)
         fun isLocalMinima() = neighbours().all { height < it.height }
-        fun sizeOfBasin() = (height until 9)
-            .fold(setOf(this)) { set, _ ->
-                set + set.flatMap(Tile::neighbours).filter { it.height < 9 }
-            }.size
+        fun sizeOfBasin() = mutableSetOf(this).apply {
+            repeat(9 - height) {
+                addAll(flatMap(Tile::neighbours).filter { it.height < 9 })
+            }
+        }.size
     }
 }
