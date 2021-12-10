@@ -2,8 +2,6 @@ package year2021.day10
 
 import Challenge
 import kotlin.math.max
-import kotlin.math.pow
-import kotlin.math.roundToInt
 
 fun main() = Day10.printSolutions()
 
@@ -19,10 +17,9 @@ object Day10 : Challenge() {
         val reducing = line.toMutableList()
         var index = 0
         while (index < reducing.size - 1) {
-            val cur = reducing[index]
             when (val next = reducing[index + 1]) {
                 in brackets.keys -> index++
-                brackets[cur] -> {
+                brackets[reducing[index]] -> {
                     reducing.removeAt(index)
                     reducing.removeAt(index)
                     index = max(index - 1, 0)
@@ -33,12 +30,18 @@ object Day10 : Challenge() {
         Type.Incomplete(reducing)
     }
 
-    override fun part1() = parsed.filterIsInstance(Type.Illegal::class.java).sumOf {
-        (57 * 21.0.pow(brackets.values.indexOf(it.char) - 1)).roundToInt()
-    }
+    override fun part1() = parsed.filterIsInstance(Type.Illegal::class.java)
+        .map(Type.Illegal::char)
+        .map(brackets.values::indexOf)
+        .sumOf(listOf(3, 57, 1197, 25137)::get)
 
     override fun part2() = parsed.filterIsInstance(Type.Incomplete::class.java)
-        .map { it.list.reversed().map(brackets.keys::indexOf).fold(0L) { score, index -> score * 5 + index + 1 } }
+        .map(Type.Incomplete::list)
+        .map(::getScore)
         .sorted()
         .let { it[it.size / 2] }
+
+    fun getScore(list: List<Char>) = list.reversed()
+        .map(brackets.keys::indexOf)
+        .fold(0L) { score, index -> score * 5 + index + 1 }
 }
