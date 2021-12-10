@@ -1,71 +1,46 @@
 package year2021.day10
 
 import Challenge
-import year2021.day10.Day10.closers
-import year2021.day10.Day10.openers
 import kotlin.math.max
+import kotlin.math.pow
 
 fun main() = Day10.printSolutions()
 
 object Day10 : Challenge() {
-    val parsed = input.lines()
+    val brackets = mapOf('(' to ')', '[' to ']', '{' to '}', '<' to '>')
 
-    val openers = listOf('(', '[', '{', '<')
-    val closers = listOf(')', ']', '}', '>')
-
-    override fun part1(): Any? {
-        return parsed.mapNotNull(::getIllegalCharacter).map {
-            when (it) {
-                ')' -> 3
-                ']' -> 57
-                '}' -> 1197
-                '>' -> 25137
-                else -> error("")
-            }
-        }.sum()
+    sealed interface Type {
+        @JvmInline value class Incomplete(val list: List<Char>) : Type
+        @JvmInline value class Illegal(val char: Char) : Type
     }
 
-    fun getIllegalCharacter(line: String): Char? {
-        var toReduceLine = line
+    fun reduceLine(line: String): Type {
+        val reducing = line.toMutableList()
         var index = 0
-        while (index < toReduceLine.length - 1) {
-            var curChar = toReduceLine[index]
-            var nextChar = toReduceLine[index + 1]
-            if (curChar in openers && nextChar in openers) {
-                index++
-            } else if (openers.indexOf(curChar) == closers.indexOf(nextChar)) {
-                toReduceLine = toReduceLine.substring(0 until index) + toReduceLine.substring(index + 2)
-                index = max(index - 1, 0)
-            } else if (openers.indexOf(curChar) != closers.indexOf(nextChar)) {
-                return nextChar
+        while (index < reducing.size - 1) {
+            val cur = reducing[index]
+            val next = reducing[index + 1]
+            when {
+                next in brackets.keys -> index++
+                brackets[cur] == next -> {
+                    reducing.removeAt(index)
+                    reducing.removeAt(index)
+                    index = max(index - 1, 0)
+                }
+                else -> return Type.Illegal(next)
             }
         }
-        return null
+        return Type.Incomplete(reducing)
     }
 
-    override fun part2(): Any? {
-        return parsed.filter { getIllegalCharacter(it) == null }
-            .map(::removePairs)
-            .map {
-                it.reversed().map(openers::indexOf)
-                    .fold(0L){ score, index -> score * 5 + index + 1} }
-            .sorted()
-            .let { it[it.size/2] }
+    val parsed = input.lines().map(::reduceLine)
+
+    override fun part1() = parsed.filterIsInstance(Type.Illegal::class.java).sumOf {
+        3 * 21.0.pow(brackets.values.indexOf(it.char))
     }
 
-    fun removePairs(line: String): String {
-        var toReduceLine = line
-        var index = 0
-        while (index < toReduceLine.length - 1) {
-            var curChar = toReduceLine[index]
-            var nextChar = toReduceLine[index + 1]
-            if (curChar in openers && nextChar in openers) {
-                index++
-            } else if (openers.indexOf(curChar) == closers.indexOf(nextChar)) {
-                toReduceLine = toReduceLine.substring(0 until index) + toReduceLine.substring(index + 2)
-                index = max(index - 1, 0)
-            }
-        }
-        return toReduceLine
-    }
+    override fun part2() = parsed.filterIsInstance(Type.Incomplete::class.java)
+        .map { it.list.reversed().map(brackets.keys::indexOf).fold(0L) { score, index -> score * 5 + index + 1 } }
+        .sorted()
+        .let { it[it.size / 2] }
 }
