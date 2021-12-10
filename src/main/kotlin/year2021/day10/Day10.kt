@@ -1,7 +1,6 @@
 package year2021.day10
 
 import Challenge
-import kotlin.math.max
 
 fun main() = Day10.printMeasure()
 
@@ -12,24 +11,19 @@ object Day10 : Challenge() {
     private val incomplete = mutableListOf<List<Char>>()
 
     init {
-        loop@for (line in input.lines()) {
-            val reducing = line.toMutableList()
-            var index = 0
-            while (index < reducing.size - 1) {
-                when (val next = reducing[index + 1]) {
-                    in brackets.keys -> index++
-                    brackets[reducing[index]] -> {
-                        reducing.removeAt(index)
-                        reducing.removeAt(index)
-                        index = max(index - 1, 0)
-                    }
+        input.lines().forEach{ line ->
+            val stack = mutableListOf<Char>()
+            for (char in line) {
+                when (char) {
+                    in brackets.keys -> stack.add(char)
+                    brackets[stack.last()] -> stack.removeLast()
                     else -> {
-                        illegal.add(next)
-                        continue@loop
+                        illegal.add(char)
+                        return@forEach
                     }
                 }
             }
-            incomplete.add(reducing)
+            incomplete.add(stack)
         }
     }
 
