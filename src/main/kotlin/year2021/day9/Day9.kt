@@ -6,8 +6,8 @@ fun main() = Day9.printMeasure()
 
 object Day9 : Challenge("--- Day 9: Smoke Basin ---") {
     private val parsed = input.lines().withIndex().flatMap { (y, line) ->
-        line.withIndex().map { (x, char) ->
-            Tile(y, x, char.digitToInt())
+        line.withIndex().mapNotNull { (x, char) ->
+            char.takeIf { it != '9' }?.let { Tile(y, x, it.digitToInt()) }
         }
     }.associateBy { (y, x, _) -> y to x }
     private val localMinima = parsed.values.filter(Tile::isLocalMinima)
