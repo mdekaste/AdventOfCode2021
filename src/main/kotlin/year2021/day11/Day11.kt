@@ -54,8 +54,8 @@ class Octopus(
         }
     }
 
-    fun flash() = (brightness > 9).also {
-        if(it){
+    fun flash() {
+        if(brightness > 9){
             flashed++
             brightness = 0
         }
