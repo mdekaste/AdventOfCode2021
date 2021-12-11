@@ -8,61 +8,56 @@ typealias Point = Pair<Int, Int>
 object Day11 : Challenge("--- Day 11: Dumbo Octopus ---") {
 
     val parsed = input.lines().flatMapIndexed { y, line ->
-        line.mapIndexed { x, c -> Octopus(y, x, c.digitToInt()) }
+        line.mapIndexed { x, c -> listOf(y, x, c.digitToInt()) }
     }
 
     override fun part1() = simulate(100)
     override fun part2() = simulate()
 
     fun simulate(steps: Int? = null): Int{
-        val octopi = toMutableInput(parsed)
+        val octopi = buildMap<Point, Octopus> {
+            for((y,x,brightness) in parsed){
+                put(y to x, Octopus(y, x, brightness, this))
+            }
+        }.values
 
         var step = 0
-
         while(steps == null || step < steps){
             if(octopi.all { it.brightness == 0 })
                 return step
-            octopi.forEach(Octopus.Mutable::increaseBrightness)
-            octopi.forEach(Octopus.Mutable::flash)
+            octopi.forEach(Octopus::increaseBrightness)
+            octopi.forEach(Octopus::flash)
             step++
         }
-        return octopi.sumOf(Octopus.Mutable::flashCount)
+        return octopi.sumOf(Octopus::flashed)
     }
-
-    fun toMutableInput(list: List<Octopus>) = buildMap<Point, Octopus.Mutable> {
-        for(octopus in list){
-            put(octopus.point, octopus.toMutable(this))
-        }
-    }.values
 }
 
-open class Octopus(
+class Octopus(
     val y : Int,
     val x: Int,
-    open val brightness: Int
+    var brightness: Int,
+    grid: Map<Point, Octopus>
 ){
-    val point: Point = y to x
-    fun toMutable(grid: Map<Point, Mutable>) = Mutable(y, x, brightness, grid)
+    var flashed: Int = 0
 
-    class Mutable(y: Int, x: Int, override var brightness: Int, grid: Map<Point, Mutable>) : Octopus(y, x, brightness){
-        var flashCount = 0
-        private val neighbors by lazy {
-            listOf(y-1 to x-1, y-1 to x, y-1 to x+1, y to x-1, y to x+1, y+1 to x-1, y+1 to x, y+1 to x+1)
-                .mapNotNull(grid::get)
+    private val neighbors by lazy {
+        listOf( y - 1   to x - 1, y - 1 to x, y - 1 to x + 1,
+                y       to x - 1, null      , y     to x + 1,
+                y + 1   to x - 1, y + 1 to x, y + 1 to x + 1
+        ).mapNotNull(grid::get)
+    }
+
+    fun increaseBrightness(){
+        if(++brightness == 10){
+            neighbors.forEach(Octopus::increaseBrightness)
         }
-        fun increaseBrightness(){
-            brightness++
-            if(brightness == 10){
-                neighbors.forEach(Mutable::increaseBrightness)
-            }
-        }
-        fun flash(): Boolean{
-            if(brightness > 9){
-                flashCount++
-                brightness = 0
-                return true
-            }
-            return false
+    }
+
+    fun flash() = (brightness > 9).also {
+        if(it){
+            flashed++
+            brightness = 0
         }
     }
 
