@@ -4,61 +4,57 @@ import Challenge
 
 fun main() = Day11.printMeasure()
 
-typealias Point = Pair<Int, Int>
 object Day11 : Challenge("--- Day 11: Dumbo Octopus ---") {
 
-    val parsed = input.lines().flatMapIndexed { y, line ->
-        line.mapIndexed { x, c -> listOf(y, x, c.digitToInt()) }
-    }
+    override fun part1() = simulation.first { (index, _) -> index == 100 }.value.sumOf(Octopus::flashCount)
+    override fun part2() = simulation.first { (_, value) -> value.all { it.brightness == 0 } }.index
 
-    override fun part1() = simulate(100)
-    override fun part2() = simulate()
-
-    fun simulate(steps: Int? = null): Int{
-        val octopi = buildMap<Point, Octopus> {
-            for((y,x,brightness) in parsed){
-                put(y to x, Octopus(y, x, brightness, this))
-            }
-        }.values
-
-        var step = 0
-        while(steps == null || step < steps){
-            if(octopi.all { it.brightness == 0 })
-                return step
-            octopi.forEach(Octopus::increaseBrightness)
-            octopi.forEach(Octopus::flash)
-            step++
+    val simulation = sequence {
+        val octopuses = Octopus.parseInput(input)
+        while(true){
+            yield(octopuses)
+            octopuses.forEach(Octopus::brighten)
+            octopuses.forEach(Octopus::flash)
         }
-        return octopi.sumOf(Octopus::flashed)
-    }
+    }.withIndex()
 }
 
-class Octopus(
-    val y : Int,
-    val x: Int,
-    var brightness: Int,
-    grid: Map<Point, Octopus>
-){
-    var flashed: Int = 0
+interface Octopus{
+    val brightness: Int
+    val flashCount: Int
+    fun brighten()
+    fun flash()
 
-    private val neighbors by lazy {
-        listOf( y - 1   to x - 1, y - 1 to x, y - 1 to x + 1,
+    companion object{
+        fun parseInput(input: String) : Collection<Octopus> = buildMap<Pair<Int,Int>, Octopus> {
+            input.lines().forEachIndexed { y, line ->
+                line.forEachIndexed { x, c ->
+                    put(y to x, OctopusImpl(y, x, c.digitToInt(), this))
+                }
+            }
+        }.values
+    }
+
+    private class OctopusImpl(y : Int, x: Int, override var brightness: Int, grid: Map<Pair<Int, Int>, Octopus>): Octopus{
+        override var flashCount: Int = 0
+        val neighbours by lazy {
+            listOf( y - 1   to x - 1, y - 1 to x, y - 1 to x + 1,
                 y       to x - 1, null      , y     to x + 1,
                 y + 1   to x - 1, y + 1 to x, y + 1 to x + 1
-        ).mapNotNull(grid::get)
-    }
+            ).mapNotNull(grid::get)
+        }
 
-    fun increaseBrightness(){
-        if(++brightness == 10){
-            neighbors.forEach(Octopus::increaseBrightness)
+        override fun brighten(){
+            if(++brightness == 10){
+                neighbours.forEach(Octopus::brighten)
+            }
+        }
+
+        override fun flash() {
+            if(brightness > 9){
+                flashCount++
+                brightness = 0
+            }
         }
     }
-
-    fun flash() {
-        if(brightness > 9){
-            flashed++
-            brightness = 0
-        }
-    }
-
 }

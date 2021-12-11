@@ -1,6 +1,8 @@
 package year2021
 
 import year2021.day1.Day1
+import year2021.day10.Day10
+import year2021.day11.Day11
 import year2021.day2.Day2
 import year2021.day3.Day3
 import year2021.day4.Day4
@@ -20,4 +22,6 @@ fun main(){
     Day7.printMeasure()
     Day8.printMeasure()
     Day9.printMeasure()
+    Day10.printMeasure()
+    Day11.printMeasure()
 }
