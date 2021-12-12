@@ -4,59 +4,28 @@ import Challenge
 
 fun main() = Day12.printSolutions()
 
-object Day12 : Challenge() {
-    val parsed = input.lines()
+object Day12 : Challenge("--- Day 12: Passage Pathing ---") {
+    val start = input.lines()
         .map { it.substringBefore('-') to it.substringAfter('-') }
-        .flatMap { listOf(it, it.second to it.first) }
-
-    override fun part1(): Any? {
-        val graph = buildMap<String, Node> {
-            for((name1, _) in parsed){
-                putIfAbsent(name1, Node(name1, parsed, this))
-            }
-        }
-        return walk(graph.getValue("start")).toList().size
-    }
-
-    fun walk(curNode: Node, visited : List<String> = emptyList()): Sequence<List<String>> = sequence{
-        if(curNode.isSmall && visited.contains(curNode.name)){
-            return@sequence
-        }
-        val curVisited = visited + curNode.name
-        if(curNode.name == "end"){
-            yield(curVisited)
-        }
-        for(node in curNode.neighbors){
-            yieldAll(walk(node, curVisited))
-        }
-    }
-
-    override fun part2(): Any? {
-        val graph = buildMap<String, Node> {
-            for((name1, _) in parsed){
-                putIfAbsent(name1, Node(name1, parsed, this))
-            }
-        }
-        val list = walk2(graph.getValue("start")).toList()
-        list.forEach(::println)
-        return list.size
-    }
-
-    fun walk2(curNode: Node, visited: List<Node> = emptyList(), hasTwiceSmall: Boolean = false) : Sequence<List<Node>> = sequence {
-        when{
-            curNode.name == "start" && visited.contains(curNode) -> return@sequence
-            curNode.name == "end" -> yield(visited + curNode)
-            curNode.isSmall && hasTwiceSmall && visited.contains(curNode) -> return@sequence
-            else ->{
-                val curVisited = visited + curNode
-                for(node in curNode.neighbors){
-                        yieldAll(
-                            walk2(
-                                node,
-                                curVisited,
-                                hasTwiceSmall || (curNode.isSmall && visited.contains(curNode))))
+        .flatMap { (a,b) -> listOf(a to b, b to a) }
+        .let { edges ->
+            buildMap<String, Node> {
+                for ((name1, _) in edges) {
+                    putIfAbsent(name1, Node(name1, edges, this))
                 }
             }
+        }.getValue("start")
+
+    override fun part1() = walk(start, twiceSmall = true)
+    override fun part2() = walk(start)
+
+    fun walk(curNode: Node, visited: List<String> = emptyList(), twiceSmall: Boolean = false) : Int = when{
+        curNode.name == "start" && visited.contains("start") -> 0
+        curNode.isSmall && visited.contains(curNode.name) && twiceSmall -> 0
+        curNode.name == "end" -> 1
+        else -> {
+            val nextTwiceSmall by lazy { curNode.isSmall && visited.contains(curNode.name) }
+            curNode.neighbors.sumOf { walk(it, visited + curNode.name, twiceSmall || nextTwiceSmall) }
         }
     }
 }
@@ -72,8 +41,4 @@ class Node(
             .map { it.second }
             .mapNotNull(graph::get)
     }
-
-    override fun equals(other: Any?) = this.name == (other as? Node)?.name
-    override fun hashCode() = name.hashCode()
-    override fun toString() = name
 }
