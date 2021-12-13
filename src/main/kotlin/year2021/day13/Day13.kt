@@ -2,7 +2,6 @@ package year2021.day13
 
 import Challenge
 import kotlin.math.abs
-import kotlin.math.absoluteValue
 
 fun main() = Day13.printSolutions()
 
@@ -30,14 +29,14 @@ object Day13 : Challenge() {
     }
 
     private fun folds(folds: List<Fold>, points: Set<Point>) = folds.runningFold(points) { list, fold ->
-        list.mapNotNullTo(mutableSetOf()) { it.foldOver(fold) }
+        list.mapTo(mutableSetOf()) { it.foldOver(fold) }
     }
 }
 
 data class Point(val x: Int, val y: Int) {
-    fun foldOver(fold: Fold): Point? = when (fold.hor) {
-        true -> if (x == fold.index) null else Point(fold.index - abs(fold.index - x), y)
-        false -> if (y == fold.index) null else Point(x, fold.index - abs(fold.index - y))
+    fun foldOver(fold: Fold): Point = when (fold.hor) {
+        true -> Point(fold.index - abs(fold.index - x), y)
+        false -> Point(x, fold.index - abs(fold.index - y))
     }
 }
 
