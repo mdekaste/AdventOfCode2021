@@ -7,17 +7,16 @@ import kotlin.math.absoluteValue
 fun main() = Day13.printSolutions()
 
 object Day13 : Challenge() {
-    val LS = System.lineSeparator()
-    val parsed = input.split(LS + LS).let { (first, second) ->
-        first.lines().map { it.split(",").map(String::toInt).let { (x, y) -> Point(x, y) } }.toSet() to
-                second.lines().map {
-                    it.substringAfter("fold along ").split("=").let { (coord, number) ->
-                        when (coord) {
-                            "x" -> Fold(number.toInt(), hor = true)
-                            else -> Fold(number.toInt(), hor = false)
-                        }
-                    }
-                }
+    val parsed = input.split("\r\n\r\n").let { (points, folds) ->
+        points.lines().map { point ->
+            point.split(",").map(String::toInt).let { (x, y) ->
+                Point(x, y)
+            }
+        }.toSet() to folds.lines().map { fold ->
+            fold.substringAfter("fold along ").split("=").let { (coord, number) ->
+                Fold(number.toInt(), hor = coord == "x")
+            }
+        }
     }
 
     override fun part1() = folds(parsed.second, parsed.first)[1].size
@@ -27,7 +26,7 @@ object Day13 : Challenge() {
             (0..points.maxOf(Point::x)).joinToString("") { x ->
                 if (Point(x, y) in points) "#" else "."
             }
-        }.joinToString(LS, prefix = LS, postfix = LS)
+        }.joinToString("\r\n", prefix = "\r\n", postfix = "\r\n")
     }
 
     private fun folds(folds: List<Fold>, points: Set<Point>) = folds.runningFold(points) { list, fold ->
