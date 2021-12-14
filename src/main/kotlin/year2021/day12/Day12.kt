@@ -7,9 +7,9 @@ fun main() = Day12.printSolutions()
 object Day12 : Challenge("--- Day 12: Passage Pathing ---") {
     val start = input.lines()
         .map { it.substringBefore('-') to it.substringAfter('-') }
-        .flatMap { (a,b) -> listOf(a to b, b to a) }
+        .flatMap { (a, b) -> listOf(a to b, b to a) }
         .let { edges ->
-            buildMap<String, Node> {
+            buildMap {
                 for ((name1, _) in edges) {
                     putIfAbsent(name1, Node(name1, edges, this))
                 }
@@ -19,7 +19,7 @@ object Day12 : Challenge("--- Day 12: Passage Pathing ---") {
     override fun part1() = walk(start, twiceSmall = true)
     override fun part2() = walk(start)
 
-    fun walk(curNode: Node, visited: List<String> = emptyList(), twiceSmall: Boolean = false) : Int = when{
+    fun walk(curNode: Node, visited: List<String> = emptyList(), twiceSmall: Boolean = false): Int = when {
         curNode.name == "start" && visited.contains("start") -> 0
         curNode.isSmall && visited.contains(curNode.name) && twiceSmall -> 0
         curNode.name == "end" -> 1
@@ -34,7 +34,7 @@ class Node(
     val name: String,
     edges: List<Pair<String, String>>,
     graph: Map<String, Node>
-){
+) {
     val isSmall = name.all(Char::isLowerCase)
     val neighbors by lazy {
         edges.filter { it.first == name }

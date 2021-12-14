@@ -4,6 +4,7 @@ import year2021.day1.Day1
 import year2021.day10.Day10
 import year2021.day11.Day11
 import year2021.day12.Day12
+import year2021.day13.Day13
 import year2021.day2.Day2
 import year2021.day3.Day3
 import year2021.day4.Day4
@@ -16,19 +17,20 @@ import kotlin.system.measureTimeMillis
 
 fun main(){
     measureTimeMillis {
-        Day1.printSolutions()
-        Day2.printSolutions()
+        Day1.printMeasure(1)
+        Day2.printMeasure(1)
+        Day3.printMeasure(1)
+        Day4.printMeasure(1)
+        Day5.printMeasure(1)
+        Day6.printMeasure(1)
+        Day7.printMeasure(1)
+        Day8.printMeasure(1)
+        Day9.printMeasure(1)
+        Day10.printMeasure(1)
+        Day11.printMeasure(1)
+        Day12.printMeasure(1)
+        Day13.printMeasure(1)
+    }.let {
+        println("total run time in ms: $it")
     }
-    Day1.printMeasure()
-    Day2.printMeasure()
-    Day3.printMeasure()
-    Day4.printMeasure()
-    Day5.printMeasure()
-    Day6.printMeasure()
-    Day7.printMeasure()
-    Day8.printMeasure()
-    Day9.printMeasure()
-    Day10.printMeasure()
-    Day11.printMeasure()
-    Day12.printMeasure()
 }
