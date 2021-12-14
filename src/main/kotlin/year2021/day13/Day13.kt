@@ -21,11 +21,11 @@ object Day13 : Challenge() {
     override fun part1() = folds(parsed.second, parsed.first)[1].size
 
     override fun part2() = folds(parsed.second, parsed.first).last().let { points ->
-        (0..points.maxOf(Point::y)).map { y ->
+        (0..points.maxOf(Point::y)).joinToString("\r\n", prefix = "\r\n") { y ->
             (0..points.maxOf(Point::x)).joinToString("") { x ->
-                if (Point(x, y) in points) "#" else "."
+                if (Point(x, y) in points) "█" else "░"
             }
-        }.joinToString("\r\n", prefix = "\r\n", postfix = "\r\n")
+        }
     }
 
     private fun folds(folds: List<Fold>, points: Set<Point>) = folds.runningFold(points) { list, fold ->
