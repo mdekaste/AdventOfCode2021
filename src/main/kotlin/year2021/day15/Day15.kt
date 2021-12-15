@@ -5,7 +5,7 @@ import Challenge
 fun main() = Day15.printMeasure(100)
 
 object Day15 : Challenge() {
-    val parsed = input.lines().map { it.map { it.digitToInt() } }
+    val parsed = input.lines().map { it.map (Char::digitToInt) }
 
     fun buildGraph(tileCountY: Int, tileCountX: Int, input: List<List<Int>>) = buildMap {
         for(tileY in 0 until tileCountY){
