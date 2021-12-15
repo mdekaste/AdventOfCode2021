@@ -18,9 +18,9 @@ abstract class Challenge(
 
     fun printMeasure(amount: Int = 100) {
         printSolutions()
-        generateSequence { measureNanoTime { part1() } }.take(amount).average().let{ String.format("%.12f", it / 1000000000.0) }
+        generateSequence { measureNanoTime { part1() } }.drop(amount - 1).take(amount).average().let{ String.format("%.12f", it / 1000000000.0) }
             .let { println("Time to solve part1: $it") }
-        generateSequence { measureNanoTime { part2() } }.take(amount).average().let{ String.format("%.12f", it / 1000000000.0) }
+        generateSequence { measureNanoTime { part2() } }.drop(amount - 1).take(amount).average().let{ String.format("%.12f", it / 1000000000.0) }
             .let { println("Time to solve part2: $it") }
     }
 }

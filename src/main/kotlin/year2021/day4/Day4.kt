@@ -6,7 +6,7 @@ fun main() {
     Day4.printSolutions()
 }
 
-object Day4 : Challenge() {
+object Day4 : Challenge("--- Day 4: Giant Squid ---") {
     val parsed = input.split("\r\n\r\n").let { list ->
         list.first().split(",").map(String::toInt) to
             list.drop(1).map {

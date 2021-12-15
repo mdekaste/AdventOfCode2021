@@ -4,7 +4,7 @@ import Challenge
 
 fun main() = Day10.printMeasure()
 
-object Day10 : Challenge() {
+object Day10 : Challenge("--- Day 10: Syntax Scoring ---") {
     private val brackets = mapOf('(' to ')', '[' to ']', '{' to '}', '<' to '>')
 
     private val illegal = mutableListOf<Char>()

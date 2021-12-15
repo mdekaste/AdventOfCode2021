@@ -6,7 +6,7 @@ import kotlin.math.abs
 
 fun main() = Day13.printMeasure(1000)
 
-object Day13 : Challenge() {
+object Day13 : Challenge("--- Day 13: Transparent Origami ---") {
     val parsed = input.split("\r\n\r\n").let { (points, folds) ->
         points.lines().map { point ->
             point.split(",").map(String::toInt).let { (x, y) ->

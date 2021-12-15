@@ -4,7 +4,7 @@ import Challenge
 import java.math.BigInteger
 
 fun main() = Day14.printSolutions()
-object Day14 : Challenge(){
+object Day14 : Challenge("--- Day 14: Extended Polymerization ---"){
     val parsed = input.split("\r\n\r\n").let { (first, second) ->
         first to second.lines().map { it.split(" -> ") }.associate { (a, b) -> a to b }
     }

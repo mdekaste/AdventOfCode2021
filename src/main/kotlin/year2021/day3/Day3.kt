@@ -6,7 +6,7 @@ fun main() {
     Day3.printSolutions()
 }
 
-object Day3 : Challenge() {
+object Day3 : Challenge("--- Day 3: Binary Diagnostic ---") {
     private val parsed = input.lines()
     private val sizeOfNumber = parsed[0].length
 
