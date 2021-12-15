@@ -23,13 +23,13 @@ object Day15 : Challenge() {
         }
     }.run { getValue(0 to 0) to getValue(tileCountY * input.size - 1 to tileCountX * input[0].size - 1) }
 
-    override fun part1() = solveGraph(input = parsed)
-    override fun part2() = solveGraph(5, 5, parsed)
+    override fun part1() = solveGraph(parsed)
+    override fun part2() = solveGraph(parsed, 5, 5)
 
-    fun solveGraph(tileCountY: Int = 1, tileCountX: Int = 1, input: List<List<Int>>) : Int {
+    fun solveGraph(input: List<List<Int>>, tileCountY: Int = 1, tileCountX: Int = 1,) : Int {
         val (start, end) = buildGraph(tileCountY, tileCountX, input)
         start.sumValue = 0
-        val visiting = PriorityQueue(compareBy(Node::sumValue).thenBy(Node::hashCode)).apply { add(start) }
+        val visiting = PriorityQueue(compareBy(Node::sumValue)).apply { add(start) }
         while(true){
             val node = visiting.poll()
             if(node === end)
@@ -37,7 +37,7 @@ object Day15 : Challenge() {
             for(neigbour in node.neighbors){
                 if(neigbour.sumValue == null){
                     neigbour.sumValue = neigbour.baseValue + node.sumValue!!
-                    visiting.add(neigbour)
+                    visiting.offer(neigbour)
                 }
             }
         }
