@@ -1,6 +1,7 @@
 package year2021.day15
 
 import Challenge
+import java.util.*
 
 fun main() = Day15.printMeasure(100)
 
@@ -29,9 +30,9 @@ object Day15 : Challenge() {
     fun solveGraph(tileCountY: Int = 1, tileCountX: Int = 1, input: List<List<Int>>) : Int {
         val (start, end) = buildGraph(tileCountY, tileCountX, input)
         start.sumValue = 0
-        val visiting = sortedSetOf(compareBy(Node::sumValue).thenBy(Node::hashCode), start)
+        val visiting = PriorityQueue(compareBy(Node::sumValue).thenBy(Node::hashCode)).apply { add(start) }
         while(visiting.isNotEmpty()){
-            val node = visiting.pollFirst()!!
+            val node = visiting.poll()
             if(node === end) break;
             for(neigbour in node.neighbors){
                 val nextValue = neigbour.baseValue + node.sumValue!!
