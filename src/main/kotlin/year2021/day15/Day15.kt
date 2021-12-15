@@ -26,32 +26,29 @@ object Day15 : Challenge() {
     override fun part1() = solveGraph(input = parsed)
     override fun part2() = solveGraph(5, 5, parsed)
 
-
     fun solveGraph(tileCountY: Int = 1, tileCountX: Int = 1, input: List<List<Int>>) : Int {
         val (start, end) = buildGraph(tileCountY, tileCountX, input)
         start.sumValue = 0
         val visiting = PriorityQueue(compareBy(Node::sumValue).thenBy(Node::hashCode)).apply { add(start) }
-        while(visiting.isNotEmpty()){
+        while(true){
             val node = visiting.poll()
-            if(node === end) break;
+            if(node === end)
+                return end.sumValue!!
             for(neigbour in node.neighbors){
-                val nextValue = neigbour.baseValue + node.sumValue!!
-                if(neigbour.sumValue == null || nextValue < neigbour.sumValue!!){
-                    neigbour.sumValue = nextValue
+                if(neigbour.sumValue == null){
+                    neigbour.sumValue = neigbour.baseValue + node.sumValue!!
                     visiting.add(neigbour)
                 }
             }
         }
-        return end.sumValue!!
     }
 }
 
-typealias Point = Pair<Int, Int>
 class Node(
     val y: Int,
     val x : Int,
     val baseValue: Int,
-    graph: Map<Point, Node>
+    graph: Map<Any, Node>
 ){
     val neighbors by lazy{ listOf(y - 1 to x, y + 1 to x, y to x - 1, y to x + 1).mapNotNull(graph::get) }
     var sumValue: Int? = null
