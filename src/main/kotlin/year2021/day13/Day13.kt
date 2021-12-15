@@ -1,7 +1,7 @@
 package year2021.day13
 
 import Challenge
-import asciiparse.ASCIIParser
+import utility.ASCIIParser
 import kotlin.math.abs
 
 fun main() = Day13.printMeasure(1000)

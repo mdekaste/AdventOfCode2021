@@ -1,6 +1,4 @@
-package asciiparse
-
-import java.nio.file.Files.lines
+package utility
 
 object ASCIIParser {
     private const val ALPHABET =
