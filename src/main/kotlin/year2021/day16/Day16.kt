@@ -93,14 +93,3 @@ sealed interface Packet{
         }
     }
 }
-
-class MutableString(
-    private var value: String
-){
-    fun removeFirstChars(amount: Int) : String {
-        val range = 0 until amount
-        val toReturn = value.substring(range)
-        value = value.removeRange(range)
-        return toReturn
-    }
-}
