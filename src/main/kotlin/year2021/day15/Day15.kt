@@ -3,7 +3,7 @@ package year2021.day15
 import Challenge
 import java.util.PriorityQueue
 
-fun main() = Day15.printMeasure(50)
+fun main() = Day15.printSolutions()
 
 object Day15 : Challenge("--- Day 15: Chiton ---") {
     val parsed = input.lines().map { it.map(Char::digitToInt) }
@@ -45,12 +45,7 @@ object Day15 : Challenge("--- Day 15: Chiton ---") {
     }
 }
 
-class Node(
-    y: Int,
-    x: Int,
-    val cost: Int,
-    graph: Map<Pair<Int, Int>, Node>
-) {
-    val neighbors by lazy { listOf(y - 1 to x, y + 1 to x, y to x - 1, y to x + 1).mapNotNull(graph::get) }
+class Node(y: Int, x: Int, val cost: Int, graph: Map<Pair<Int, Int>, Node>) {
+    val neighbors by lazy { listOfNotNull(graph[y - 1 to x], graph[y + 1 to x], graph[y to x - 1], graph[y to x + 1]) }
     var sum: Int? = null
 }
