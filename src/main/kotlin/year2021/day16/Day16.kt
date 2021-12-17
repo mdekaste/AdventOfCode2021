@@ -2,7 +2,7 @@ package year2021.day16
 
 import Challenge
 
-fun main() = Day16.printSolutions()
+
 
 object Day16 : Challenge() {
     val parsed = input.map { it.digitToInt(16).toString(2).padStart(4, '0') }.joinToString("")
