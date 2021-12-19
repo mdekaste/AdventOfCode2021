@@ -1,7 +1,6 @@
 package year2021.day19
 
 import Challenge
-import year2020.day12.Day11
 import kotlin.math.abs
 
 fun main() = Day19.printSolutions()
@@ -16,9 +15,9 @@ object Day19 : Challenge() {
     val result = solve(parsed.drop(1).toSet(), emptySet(), parsed[0].scannedBeacons)
 
     fun solve(
-        scannersToCheck: Set<Scanner>,
-        offsetScanners: Set<Coordinate>,
-        totalBeacons: Set<Coordinate>
+        scannersToCheck: Set<Scanner>,  //set of scanners that still haven't found a correct overlap
+        offsetScanners: Set<Coordinate>,//set of offsets that contain the relative position to scanner 0
+        totalBeacons: Set<Coordinate>   //set of beacons that are guaranteed found relative to scanner 0
     ) : Pair<Int, Int>? {
         if(scannersToCheck.isEmpty())
             return totalBeacons.size to offsetScanners.flatMap { a -> offsetScanners.map { x -> a - x } }.maxOf { (a,b,c) -> abs(a) + abs(b) + abs(c) }
@@ -30,7 +29,8 @@ object Day19 : Challenge() {
             val newOffsetScanners = offsetScanners.toMutableSet()
             val beacons = totalBeacons.toMutableSet()
             for((orientation, offset) in scannerOrientationsThatFit.values){
-                beacons += orientation.map { it + offset }.toSet()
+                for(orient in orientation)
+                    beacons += orient + offset
                 newOffsetScanners += offset
             }
             return solve(newScannersToCheck, newOffsetScanners, beacons)
@@ -92,23 +92,10 @@ data class Scanner(
         ).map { scannedBeacons.map(it).toSet() }
 }
 
-data class Coordinate(
-    val x: Int,
-    val y: Int,
-    val z: Int
-){
+data class Coordinate(val x: Int, val y: Int, val z: Int){
     companion object{
-        fun of(input: String) : Coordinate{
-            val (x, y, z) = input.split(",").map(String::toInt)
-            return Coordinate(x, y, z)
-        }
+        fun of(input: String) = input.split(",").map(String::toInt).let{ (x,y,z) -> Coordinate(x,y,z) }
     }
-
-    operator fun minus(coordinate: Coordinate) : Coordinate{
-        return Coordinate(x - coordinate.x, y - coordinate.y, z - coordinate.z)
-    }
-
-    operator fun plus(coordinate: Coordinate) : Coordinate{
-        return Coordinate(x + coordinate.x, y + coordinate.y, z + coordinate.z)
-    }
+    operator fun minus(o: Coordinate) = Coordinate(x - o.x, y - o.y, z - o.z)
+    operator fun plus(o: Coordinate) = Coordinate(x + o.x, y + o.y, z + o.z)
 }
