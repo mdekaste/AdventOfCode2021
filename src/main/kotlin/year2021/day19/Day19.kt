@@ -17,39 +17,31 @@ object Day19 : Challenge() {
     val result = solve(parsed)
 
     private fun solve(input: List<Scanner>): Pair<Int, Int> {
-        val scannersToCheck = (1 until input.size).toMutableList()
-        val offsetScanners = mutableSetOf<Coordinate>()
-        val totalBeacons = input[0].scannedBeacons.toMutableSet()
-        while (scannersToCheck.isNotEmpty()) {
-            val scanner = scannersToCheck.removeFirst()
+        val scanners = (1 until input.size).toMutableList()
+        val offsets = mutableSetOf<Coordinate>()
+        val beacons = input[0].scannedBeacons.toMutableSet()
+        while (scanners.isNotEmpty()) {
+            val scanner = scanners.removeFirst()
             try {
-                val (orientations, offset) = findOrientationThatFits(input[scanner], totalBeacons)!!
+                val (orientations, offset) = findOrientationThatFits(input[scanner], beacons)!!
                 for (orientation in orientations)
-                    totalBeacons += orientation + offset
-                offsetScanners += offset
+                    beacons += orientation + offset
+                offsets += offset
             } catch (e: NullPointerException) {
-                scannersToCheck.add(scanner)
+                scanners.add(scanner)
             }
         }
-        val beaconCount = totalBeacons.size
-        val max = offsetScanners.flatMap { a -> offsetScanners.map { x -> a - x } }
-            .maxOf { (a, b, c) -> abs(a) + abs(b) + abs(c) }
-        return beaconCount to max
+        return beacons.size to offsets.cartesianProduct(offsets) { a, b -> a - b }.maxOf(Coordinate::manhattan)
     }
 
     private fun findOrientationThatFits(
         scanner: Scanner,
-        totalBeacons: Set<Coordinate>
-    ): Pair<Set<Coordinate>, Coordinate>? {
-        return scanner.orientations.firstNotNullOfOrNull { orient ->
-            totalBeacons.flatMap { c1 -> orient.map { c2 -> c1 - c2 } }
-                .groupingBy { it }
-                .eachCount()
-                .filterValues { it >= MINIMALBEACONS }
-                .keys
-                .singleOrNull()
-                ?.let { orient to it }
-        }
+        beacons: Set<Coordinate>
+    ) = scanner.orientations.firstNotNullOfOrNull { orientation ->
+        beacons.cartesianProduct(orientation) { a, b -> a - b }
+            .groupingBy { it }.eachCount()
+            .entries.firstOrNull { (_, value) -> value >= MINIMALBEACONS }
+            ?.let { (key, _) -> orientation to key }
     }
 }
 
@@ -102,4 +94,8 @@ data class Coordinate(val x: Int, val y: Int, val z: Int) {
     operator fun minus(o: Coordinate) = Coordinate(x - o.x, y - o.y, z - o.z)
     operator fun plus(o: Coordinate) = Coordinate(x + o.x, y + o.y, z + o.z)
     operator fun div(o: Int) = Coordinate(x / o, y / o, z / o)
+    val manhattan get() = abs(x) + abs(y) + abs(z)
 }
+
+fun <T1, T2, R> Set<T1>.cartesianProduct(other: Set<T2>, transform: (T1, T2) -> R) =
+    flatMap { a -> other.map { b -> transform(a, b) } }
