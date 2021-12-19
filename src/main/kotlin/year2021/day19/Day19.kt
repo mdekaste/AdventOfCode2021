@@ -1,7 +1,9 @@
 package year2021.day19
 
 import Challenge
+import year2020.day12.Day11
 import java.lang.NullPointerException
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.abs
 import kotlin.system.measureTimeMillis
 
@@ -35,14 +37,17 @@ object Day19 : Challenge() {
         return beacons.size to offsets.cartesianProduct(offsets) { a, b -> a - b }.maxOf(Coordinate::manhattan)
     }
 
-    private fun findOrientationThatFits(
-        scanner: Scanner,
-        beacons: Set<Coordinate>
-    ) = scanner.orientations.firstNotNullOfOrNull { orientation ->
-        beacons.cartesianProduct(orientation) { a, b -> a - b }
-            .groupingBy { it }.eachCount()
-            .entries.firstOrNull { (_, value) -> value >= MINIMALBEACONS }
-            ?.let { (key, _) -> orientation to key }
+    private fun findOrientationThatFits(scanner: Scanner, beacons: Set<Coordinate>): Pair<Set<Coordinate>, Coordinate>? {
+        for(orientation in scanner.orientations){
+            val counter = mutableMapOf<Coordinate, AtomicInteger>()
+            val offsets = beacons.cartesianProduct(orientation) { a, b -> a - b }
+            for(offset in offsets){
+                val counted = counter.getOrPut(offset){ AtomicInteger() }.incrementAndGet()
+                if(counted == 12)
+                    return orientation to offset
+            }
+        }
+        return null
     }
 }
 
@@ -91,10 +96,8 @@ data class Coordinate(val x: Int, val y: Int, val z: Int) {
     companion object {
         fun of(input: String) = input.split(",").map(String::toInt).let { (x, y, z) -> Coordinate(x, y, z) }
     }
-
     operator fun minus(o: Coordinate) = Coordinate(x - o.x, y - o.y, z - o.z)
     operator fun plus(o: Coordinate) = Coordinate(x + o.x, y + o.y, z + o.z)
-    operator fun div(o: Int) = Coordinate(x / o, y / o, z / o)
     val manhattan get() = abs(x) + abs(y) + abs(z)
 }
 
