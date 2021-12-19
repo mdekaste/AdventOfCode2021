@@ -14,9 +14,8 @@ object Day19 : Challenge() {
     override fun part1() = result.first
     override fun part2() = result.second
 
-    val result = solve(parsed)
-
-    private fun solve(input: List<Scanner>): Pair<Int, Int> {
+    private val result = solve(parsed)
+    fun solve(input: List<Scanner>): Pair<Int, Int> {
         val scanners = (1 until input.size).toCollection(ArrayDeque())
         val offsets = mutableSetOf<Coordinate>()
         val beacons = input[0].scannedBeacons.toMutableSet()
@@ -47,13 +46,13 @@ data class Scanner(
     companion object {
         fun of(input: String): Scanner {
             val lines = input.lines()
-            val id = lines[0].filter { it.isDigit() }.toInt()
+            val id = lines[0].filter(Char::isDigit).toInt() 
             val scannedBeacons = lines.drop(1).map(Coordinate::of).toSet()
             return Scanner(id, scannedBeacons)
         }
     }
 
-    val orientations: Sequence<Set<Coordinate>> = sequenceOf<(Coordinate) -> Coordinate>(
+    val orientations: List<Set<Coordinate>> = listOf<(Coordinate) -> Coordinate>(
         { (x, y, z) -> Coordinate(x, y, z) },
         { (x, y, z) -> Coordinate(x, z, -y) },
         { (x, y, z) -> Coordinate(x, -y, -z) },
