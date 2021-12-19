@@ -1,16 +1,11 @@
 package year2021.day19
 
 import Challenge
+import java.lang.NullPointerException
 import kotlin.math.abs
-import kotlin.math.absoluteValue
 import kotlin.system.measureTimeMillis
 
-fun main(){
-    measureTimeMillis {
-        Day19.printSolutions()
-    }.let(::println)
-}
-
+fun main() = measureTimeMillis { Day19.printSolutions() }.let(::println)
 object Day19 : Challenge() {
     const val MINIMALBEACONS = 12
     val parsed = input.split("\r\n\r\n").map(Scanner::of)
@@ -20,32 +15,28 @@ object Day19 : Challenge() {
 
     val result = solve(parsed)
 
-    fun solve(input: List<Scanner>): Pair<Int, Int> {
-        val scannersToCheck = (1 until input.size).toMutableSet()
+    private fun solve(input: List<Scanner>): Pair<Int, Int> {
+        val scannersToCheck = (1 until input.size).toMutableList()
         val offsetScanners = mutableSetOf<Coordinate>()
         val totalBeacons = input[0].scannedBeacons.toMutableSet()
-        while (true) {
-            if (scannersToCheck.isEmpty()) {
-                val beaconCount = totalBeacons.size
-                val max = offsetScanners.flatMap { a -> offsetScanners.map { x -> a - x } }
-                    .maxOf { (a, b, c) -> abs(a) + abs(b) + abs(c) }
-                return beaconCount to max
-            }
-            val scannerOrientationsThatFit = scannersToCheck
-                .mapNotNull { scanner -> findOrientationThatFits(input[scanner], totalBeacons)?.let { scanner to it } }
-                .toMap()
-            if (scannerOrientationsThatFit.isNotEmpty()) {
-                scannersToCheck -= scannerOrientationsThatFit.keys
-                for ((orientation, offset) in scannerOrientationsThatFit.values) {
-                    for (orient in orientation)
-                        totalBeacons += orient + offset
-                    offsetScanners += offset
-                }
+        while (scannersToCheck.isNotEmpty()) {
+            val scanner = scannersToCheck.removeFirst()
+            try {
+                val(orientations, offset) = findOrientationThatFits(input[scanner], totalBeacons)!!
+                for (orientation in orientations)
+                    totalBeacons += orientation + offset
+                offsetScanners += offset
+            } catch (e: NullPointerException){
+                scannersToCheck.add(scanner)
             }
         }
+        val beaconCount = totalBeacons.size
+        val max = offsetScanners.flatMap { a -> offsetScanners.map { x -> a - x } }
+            .maxOf { (a, b, c) -> abs(a) + abs(b) + abs(c) }
+        return beaconCount to max
     }
 
-    fun findOrientationThatFits(scanner: Scanner, totalBeacons: Set<Coordinate>) : Pair<Set<Coordinate>, Coordinate>? {
+    private fun findOrientationThatFits(scanner: Scanner, totalBeacons: Set<Coordinate>) : Pair<Set<Coordinate>, Coordinate>? {
         return scanner.orientations.firstNotNullOfOrNull { orient ->
             totalBeacons.flatMap { c1 -> orient.map { c2 -> c1 - c2 } }
                 .groupingBy { it }
@@ -106,5 +97,4 @@ data class Coordinate(val x: Int, val y: Int, val z: Int){
     operator fun minus(o: Coordinate) = Coordinate(x - o.x, y - o.y, z - o.z)
     operator fun plus(o: Coordinate) = Coordinate(x + o.x, y + o.y, z + o.z)
     operator fun div(o: Int) = Coordinate(x / o, y / o, z / o)
-    val absoluteValue get() = Coordinate(x.absoluteValue, y.absoluteValue, z.absoluteValue)
 }
