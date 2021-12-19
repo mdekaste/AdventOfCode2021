@@ -1,9 +1,7 @@
 package year2021.day19
 
 import Challenge
-import year2020.day12.Day11
-import java.lang.NullPointerException
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.*
 import kotlin.math.abs
 import kotlin.system.measureTimeMillis
 
@@ -19,35 +17,26 @@ object Day19 : Challenge() {
     val result = solve(parsed)
 
     private fun solve(input: List<Scanner>): Pair<Int, Int> {
-        val scanners = (1 until input.size).toMutableList()
+        val scanners = (1 until input.size).toCollection(ArrayDeque())
         val offsets = mutableSetOf<Coordinate>()
         val beacons = input[0].scannedBeacons.toMutableSet()
-        while (scanners.isNotEmpty()) {
-            val scanner = scanners.removeFirst()
-            val orientationsAndOffset = findOrientationThatFits(input[scanner], beacons)
-            if( orientationsAndOffset == null){
-                scanners.add(scanner)
-                continue
+        loop@while (scanners.isNotEmpty()) {
+            val scanner = scanners.pollFirst()
+            for(orientation in input[scanner].orientations){
+                val counter = mutableMapOf<Coordinate, MutableInt>()
+                val diffs = beacons.cartesianProduct(orientation) { a, b -> a - b}
+                for(diff in diffs){
+                    if(++counter.getOrPut(diff, ::MutableInt).value == MINIMALBEACONS){
+                        for(coordinate in orientation)
+                            beacons += coordinate + diff
+                        offsets += diff
+                        continue@loop
+                    }
+                }
             }
-            val (orientations, offset) = orientationsAndOffset
-            for (orientation in orientations)
-                beacons += orientation + offset
-            offsets += offset
+            scanners.addLast(scanner)
         }
         return beacons.size to offsets.cartesianProduct(offsets) { a, b -> a - b }.maxOf(Coordinate::manhattan)
-    }
-
-    private fun findOrientationThatFits(scanner: Scanner, beacons: Set<Coordinate>): Pair<Set<Coordinate>, Coordinate>? {
-        for(orientation in scanner.orientations){
-            val counter = mutableMapOf<Coordinate, AtomicInteger>()
-            val offsets = beacons.cartesianProduct(orientation) { a, b -> a - b }
-            for(offset in offsets){
-                val counted = counter.getOrPut(offset){ AtomicInteger() }.incrementAndGet()
-                if(counted == 12)
-                    return orientation to offset
-            }
-        }
-        return null
     }
 }
 
@@ -103,3 +92,5 @@ data class Coordinate(val x: Int, val y: Int, val z: Int) {
 
 fun <T1, T2, R> Set<T1>.cartesianProduct(other: Set<T2>, transform: (T1, T2) -> R) =
     flatMap { a -> other.map { b -> transform(a, b) } }
+
+class MutableInt(var value: Int = 0)
