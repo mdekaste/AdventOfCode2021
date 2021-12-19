@@ -22,14 +22,15 @@ object Day19 : Challenge() {
         val beacons = input[0].scannedBeacons.toMutableSet()
         while (scanners.isNotEmpty()) {
             val scanner = scanners.removeFirst()
-            try {
-                val (orientations, offset) = findOrientationThatFits(input[scanner], beacons)!!
-                for (orientation in orientations)
-                    beacons += orientation + offset
-                offsets += offset
-            } catch (e: NullPointerException) {
+            val orientationsAndOffset = findOrientationThatFits(input[scanner], beacons)
+            if( orientationsAndOffset == null){
                 scanners.add(scanner)
+                continue
             }
+            val (orientations, offset) = orientationsAndOffset
+            for (orientation in orientations)
+                beacons += orientation + offset
+            offsets += offset
         }
         return beacons.size to offsets.cartesianProduct(offsets) { a, b -> a - b }.maxOf(Coordinate::manhattan)
     }
