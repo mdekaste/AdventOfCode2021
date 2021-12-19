@@ -1,7 +1,6 @@
 package year2021.day19
 
 import Challenge
-import java.util.*
 import kotlin.math.abs
 import kotlin.system.measureTimeMillis
 
@@ -16,17 +15,17 @@ object Day19 : Challenge() {
 
     private val result = solve(parsed)
     fun solve(input: List<Scanner>): Pair<Int, Int> {
-        val scanners = MutableList(input.size - 1){ it + 1 }
+        val scanners = MutableList(input.size - 1) { it + 1 }
         val offsets = mutableSetOf<Coordinate>()
         val beacons = input[0].scannedBeacons.toMutableSet()
-        loop@while (scanners.isNotEmpty()) {
+        loop@ while (scanners.isNotEmpty()) {
             val scanner = scanners.removeFirst()
-            for(orientation in input[scanner].orientations){
+            for (orientation in input[scanner].orientations) {
                 val counter = mutableMapOf<Coordinate, MutableInt>()
-                val diffs = beacons.cartesianProduct(orientation) { a, b -> a - b}
-                for(diff in diffs){
-                    if(++counter.getOrPut(diff, ::MutableInt).value == MINIMALBEACONS){
-                        for(coordinate in orientation)
+                val diffs = beacons.cartesianProduct(orientation) { a, b -> a - b }
+                for (diff in diffs) {
+                    if (++counter.getOrPut(diff, ::MutableInt).value == MINIMALBEACONS) {
+                        for (coordinate in orientation)
                             beacons += coordinate + diff
                         offsets += diff
                         continue@loop
@@ -84,6 +83,7 @@ data class Coordinate(val x: Int, val y: Int, val z: Int) {
     companion object {
         fun of(input: String) = input.split(",").map(String::toInt).let { (x, y, z) -> Coordinate(x, y, z) }
     }
+
     operator fun minus(o: Coordinate) = Coordinate(x - o.x, y - o.y, z - o.z)
     operator fun plus(o: Coordinate) = Coordinate(x + o.x, y + o.y, z + o.z)
     val manhattan get() = abs(x) + abs(y) + abs(z)
