@@ -16,11 +16,11 @@ object Day19 : Challenge() {
 
     private val result = solve(parsed)
     fun solve(input: List<Scanner>): Pair<Int, Int> {
-        val scanners = (1 until input.size).toCollection(ArrayDeque())
+        val scanners = MutableList(input.size - 1){ it + 1 }
         val offsets = mutableSetOf<Coordinate>()
         val beacons = input[0].scannedBeacons.toMutableSet()
         loop@while (scanners.isNotEmpty()) {
-            val scanner = scanners.pollFirst()
+            val scanner = scanners.removeFirst()
             for(orientation in input[scanner].orientations){
                 val counter = mutableMapOf<Coordinate, MutableInt>()
                 val diffs = beacons.cartesianProduct(orientation) { a, b -> a - b}
@@ -33,7 +33,7 @@ object Day19 : Challenge() {
                     }
                 }
             }
-            scanners.addLast(scanner)
+            scanners.add(scanner)
         }
         return beacons.size to offsets.cartesianProduct(offsets) { a, b -> a - b }.maxOf(Coordinate::manhattan)
     }
@@ -46,7 +46,7 @@ data class Scanner(
     companion object {
         fun of(input: String): Scanner {
             val lines = input.lines()
-            val id = lines[0].filter(Char::isDigit).toInt() 
+            val id = lines[0].filter(Char::isDigit).toInt()
             val scannedBeacons = lines.drop(1).map(Coordinate::of).toSet()
             return Scanner(id, scannedBeacons)
         }
