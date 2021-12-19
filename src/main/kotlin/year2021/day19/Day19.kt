@@ -2,40 +2,47 @@ package year2021.day19
 
 import Challenge
 import kotlin.math.abs
+import kotlin.math.absoluteValue
+import kotlin.system.measureTimeMillis
 
-fun main() = Day19.printSolutions()
+fun main(){
+    measureTimeMillis {
+        Day19.printSolutions()
+    }.let(::println)
+}
 
 object Day19 : Challenge() {
     const val MINIMALBEACONS = 12
     val parsed = input.split("\r\n\r\n").map(Scanner::of)
 
-    override fun part1() = result?.first
-    override fun part2() = result?.second
+    override fun part1() = result.first
+    override fun part2() = result.second
 
-    val result = solve(parsed.drop(1).toSet(), emptySet(), parsed[0].scannedBeacons)
+    val result = solve(parsed)
 
-    fun solve(
-        scannersToCheck: Set<Scanner>,  //set of scanners that still haven't found a correct overlap
-        offsetScanners: Set<Coordinate>,//set of offsets that contain the relative position to scanner 0
-        totalBeacons: Set<Coordinate>   //set of beacons that are guaranteed found relative to scanner 0
-    ) : Pair<Int, Int>? {
-        if(scannersToCheck.isEmpty())
-            return totalBeacons.size to offsetScanners.flatMap { a -> offsetScanners.map { x -> a - x } }.maxOf { (a,b,c) -> abs(a) + abs(b) + abs(c) }
-        val scannerOrientationsThatFit = scannersToCheck
-            .mapNotNull{ scanner -> findOrientationThatFits(scanner, totalBeacons)?.let { scanner to it } }
-            .toMap()
-        if(scannerOrientationsThatFit.isNotEmpty()){
-            val newScannersToCheck = scannersToCheck - scannerOrientationsThatFit.keys
-            val newOffsetScanners = offsetScanners.toMutableSet()
-            val beacons = totalBeacons.toMutableSet()
-            for((orientation, offset) in scannerOrientationsThatFit.values){
-                for(orient in orientation)
-                    beacons += orient + offset
-                newOffsetScanners += offset
+    fun solve(input: List<Scanner>): Pair<Int, Int> {
+        val scannersToCheck = (1 until input.size).toMutableSet()
+        val offsetScanners = mutableSetOf<Coordinate>()
+        val totalBeacons = input[0].scannedBeacons.toMutableSet()
+        while (true) {
+            if (scannersToCheck.isEmpty()) {
+                val beaconCount = totalBeacons.size
+                val max = offsetScanners.flatMap { a -> offsetScanners.map { x -> a - x } }
+                    .maxOf { (a, b, c) -> abs(a) + abs(b) + abs(c) }
+                return beaconCount to max
             }
-            return solve(newScannersToCheck, newOffsetScanners, beacons)
+            val scannerOrientationsThatFit = scannersToCheck
+                .mapNotNull { scanner -> findOrientationThatFits(input[scanner], totalBeacons)?.let { scanner to it } }
+                .toMap()
+            if (scannerOrientationsThatFit.isNotEmpty()) {
+                scannersToCheck -= scannerOrientationsThatFit.keys
+                for ((orientation, offset) in scannerOrientationsThatFit.values) {
+                    for (orient in orientation)
+                        totalBeacons += orient + offset
+                    offsetScanners += offset
+                }
+            }
         }
-        return null
     }
 
     fun findOrientationThatFits(scanner: Scanner, totalBeacons: Set<Coordinate>) : Pair<Set<Coordinate>, Coordinate>? {
@@ -64,7 +71,7 @@ data class Scanner(
         }
     }
 
-    val orientations: List<Set<Coordinate>> = listOf<(Coordinate) -> Coordinate>(
+    val orientations: Sequence<Set<Coordinate>> = sequenceOf<(Coordinate) -> Coordinate>(
             { (x,y,z) -> Coordinate(x,y,z)      },
             { (x,y,z) -> Coordinate(x,z,-y)     },
             { (x,y,z) -> Coordinate(x,-y,-z)    },
@@ -98,4 +105,6 @@ data class Coordinate(val x: Int, val y: Int, val z: Int){
     }
     operator fun minus(o: Coordinate) = Coordinate(x - o.x, y - o.y, z - o.z)
     operator fun plus(o: Coordinate) = Coordinate(x + o.x, y + o.y, z + o.z)
+    operator fun div(o: Int) = Coordinate(x / o, y / o, z / o)
+    val absoluteValue get() = Coordinate(x.absoluteValue, y.absoluteValue, z.absoluteValue)
 }
