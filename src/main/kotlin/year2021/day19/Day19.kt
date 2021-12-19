@@ -10,53 +10,44 @@ object Day19 : Challenge() {
     const val MINIMALBEACONS = 12
     val parsed = input.split("\r\n\r\n").map(Scanner::of)
 
-    override fun part1(): Any? {
-        val result = solve(parsed.drop(1), emptyList(), parsed[0].scannedBeacons)?.size
-        return result
-    }
+    override fun part1() = result?.first
+    override fun part2() = result?.second
 
-    val memo = mutableMapOf<Pair<List<Scanner>,Set<Coordinate>>,Set<Coordinate>?>()
-
+    val result = solve(parsed.drop(1), emptyList(), parsed[0].scannedBeacons)
+    
     fun solve(
         scannersToCheck: List<Scanner>,
         offsetScanners: List<Coordinate>,
         totalBeacons: Set<Coordinate>
-    ): Set<Coordinate>? = memo.getOrPut(scannersToCheck to totalBeacons){
-        if(scannersToCheck.isEmpty()){
-            offsetScanners.flatMap { a -> offsetScanners.map { x -> a - x } }.maxOf{ (a,b,c) -> abs(a) + abs(b) + abs(c) }.let(::println)
-            println(totalBeacons.size)
-            return totalBeacons
+    ) : Pair<Int, Int>? {
+        if(scannersToCheck.isEmpty())
+            return totalBeacons.size to offsetScanners.flatMap { a -> offsetScanners.map { x -> a - x } }.maxOf { (a,b,c) -> abs(a) + abs(b) + abs(c) }
+        val scannerOrientationsThatFit = scannersToCheck
+            .associateBy({it}, { findOrientationThatFits(it, totalBeacons) })
+            .mapNotNull { (key, value) -> value?.let { key to value } }
+            .toMap()
+        if(scannerOrientationsThatFit.isNotEmpty()){
+            val newScannersToCheck = scannersToCheck - scannerOrientationsThatFit.keys
+            val newOffsetScanners = offsetScanners.toMutableList()
+            var beacons = totalBeacons.toMutableSet()
+            for((orientation, offset) in scannerOrientationsThatFit.values){
+                beacons += orientation.map { it + offset }.toSet()
+                newOffsetScanners += offset
+            }
+            return solve(newScannersToCheck, newOffsetScanners, beacons)
         }
-        return scannersToCheck.map { scanner ->
-            scanner.orientations.flatMap { orientation ->
-                val offsets = totalBeacons.flatMap{ c1 -> orientation.map { c2 -> c1 - c2 } }.groupingBy { it }.eachCount()
-                offsets.mapNotNull { (offset, count) ->
-                    if(count >= 12){
-                        val orientationWithOffset = orientation.map { it + offset }.toSet()
-                        val newTotalBeacons = totalBeacons + orientationWithOffset
-                        return@mapNotNull solve(scannersToCheck - scanner, offsetScanners + offset, newTotalBeacons)
-                    } else null
-                }
-            }.firstNotNullOfOrNull { it }
-        }.firstNotNullOfOrNull { it }
+        return null
     }
 
-//    fun solve(
-//        scannersToCheck: List<Scanner>,
-//        offsetScanners: List<Coordinate>,
-//        totalBeacons: Set<Coordinate>
-//    ) : Set<Coordinate>? {
-//        if(scannersToCheck.isEmpty())
-//            return totalBeacons
-//        scannersToCheck.map { scanner ->
-//            scanner.orientations.flatMap { orientation ->
-//                totalBeacons.flatMap { c1 -> orientation.map { c2 -> c1 - c2 } }.groupingBy { it }.eachCount().filterValues { it >= 12 }.keys
-//            }
-//        }
-//    }
-
-    override fun part2(): Any? {
-        TODO("Not yet implemented")
+    fun findOrientationThatFits(scanner: Scanner, totalBeacons: Set<Coordinate>) : Pair<Set<Coordinate>, Coordinate>? {
+        return scanner.orientations.associateBy({it},{ orient ->
+            totalBeacons.flatMap { c1 -> orient.map{ c2 -> c1 - c2 } }
+                .groupingBy { it }
+                .eachCount()
+                .filterValues { it >= 12 }
+                .keys
+                .singleOrNull()
+        }).firstNotNullOfOrNull { (key, value) -> value?.let { key to it } }
     }
 }
 
