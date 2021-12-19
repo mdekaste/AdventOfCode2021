@@ -13,23 +13,22 @@ object Day19 : Challenge() {
     override fun part1() = result?.first
     override fun part2() = result?.second
 
-    val result = solve(parsed.drop(1), emptyList(), parsed[0].scannedBeacons)
-    
+    val result = solve(parsed.drop(1).toSet(), emptySet(), parsed[0].scannedBeacons)
+
     fun solve(
-        scannersToCheck: List<Scanner>,
-        offsetScanners: List<Coordinate>,
+        scannersToCheck: Set<Scanner>,
+        offsetScanners: Set<Coordinate>,
         totalBeacons: Set<Coordinate>
     ) : Pair<Int, Int>? {
         if(scannersToCheck.isEmpty())
             return totalBeacons.size to offsetScanners.flatMap { a -> offsetScanners.map { x -> a - x } }.maxOf { (a,b,c) -> abs(a) + abs(b) + abs(c) }
         val scannerOrientationsThatFit = scannersToCheck
-            .associateBy({it}, { findOrientationThatFits(it, totalBeacons) })
-            .mapNotNull { (key, value) -> value?.let { key to value } }
+            .mapNotNull{ scanner -> findOrientationThatFits(scanner, totalBeacons)?.let { scanner to it } }
             .toMap()
         if(scannerOrientationsThatFit.isNotEmpty()){
             val newScannersToCheck = scannersToCheck - scannerOrientationsThatFit.keys
-            val newOffsetScanners = offsetScanners.toMutableList()
-            var beacons = totalBeacons.toMutableSet()
+            val newOffsetScanners = offsetScanners.toMutableSet()
+            val beacons = totalBeacons.toMutableSet()
             for((orientation, offset) in scannerOrientationsThatFit.values){
                 beacons += orientation.map { it + offset }.toSet()
                 newOffsetScanners += offset
@@ -40,14 +39,15 @@ object Day19 : Challenge() {
     }
 
     fun findOrientationThatFits(scanner: Scanner, totalBeacons: Set<Coordinate>) : Pair<Set<Coordinate>, Coordinate>? {
-        return scanner.orientations.associateBy({it},{ orient ->
-            totalBeacons.flatMap { c1 -> orient.map{ c2 -> c1 - c2 } }
+        return scanner.orientations.firstNotNullOfOrNull { orient ->
+            totalBeacons.flatMap { c1 -> orient.map { c2 -> c1 - c2 } }
                 .groupingBy { it }
                 .eachCount()
-                .filterValues { it >= 12 }
+                .filterValues { it >= MINIMALBEACONS }
                 .keys
                 .singleOrNull()
-        }).firstNotNullOfOrNull { (key, value) -> value?.let { key to it } }
+                ?.let { orient to it }
+        }
     }
 }
 
