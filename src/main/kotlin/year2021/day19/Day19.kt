@@ -2,9 +2,11 @@ package year2021.day19
 
 import Challenge
 import kotlin.math.abs
-import kotlin.system.measureTimeMillis
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTimedValue
 
-fun main() = measureTimeMillis { Day19.printSolutions() }.let(::println)
+@OptIn(ExperimentalTime::class)
+fun main() = measureTimedValue { Day19.printSolutions() }.duration.let(::println)
 
 object Day19 : Challenge() {
     const val MINIMALBEACONS = 12
