@@ -8,16 +8,17 @@ object Day20 : Challenge() {
     val parsed = input.split("\r\n\r\n").let { (indexer, image) ->
         indexer to image.lines()
     }
-
-    val lightArray = parsed.first.map { if(it == '#') 1 else 0 }
-    val inputGraph = buildMap{
-        for(y in 0 until parsed.second.size)
-            for(x in 0 until parsed.second[0].length)
-                put(y to x, Node(y, x, if(parsed.second[y][x] == '#') 1 else 0))
-    }.withDefault { Node(it.first, it.second, 0) }
-
     val ySize = parsed.second.size
     val xSize = parsed.second[0].length
+
+    val lightArray = parsed.first.map { it == '#' }
+    val inputGraph = buildMap{
+        for(y in -1.. ySize)
+            for(x in -1..xSize)
+                put(y to x, Node(y, x, parsed.second[y][x] == '#'))
+    }.withDefault { Node(it.first, it.second, false) }
+
+
 
     override fun part1() = solve(2)
     override fun part2() = solve(50)
@@ -28,12 +29,12 @@ object Day20 : Challenge() {
             graph = buildMap {
                 for(point in candidatesForIndex(index, ySize, xSize)){
                     val node = graph.getValue(point)
-                    val place = node.neighbours.map(graph::getValue).map(Node::value).reduce { acc, i -> acc * 2 + i }
+                    val place = node.neighbours.map(graph::getValue).fold(0){ acc, node -> acc * 2 + if(node.value) 1 else 0 }
                     put(point, Node(point.first, point.second, lightArray[place]))
                 }
-            }.withDefault { Node(it.first, it.second, 1 - index % 2) }
+            }.withDefault { Node(it.first, it.second, index % 2 == 0) }
         }
-        return graph.values.count { it.value == 1 }
+        return graph.values.count { it.value }
     }
 
 
@@ -49,7 +50,7 @@ object Day20 : Challenge() {
 class Node(
     val y: Int,
     val x: Int,
-    val value: Int,
+    val value: Boolean,
 ){
     val neighbours =
         listOf(
