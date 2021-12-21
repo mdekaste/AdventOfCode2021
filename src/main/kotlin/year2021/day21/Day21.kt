@@ -34,12 +34,11 @@ object Day21 : Challenge() {
     }
 
     override fun part2(): BigInteger {
-        val diceCount = buildList{ for(a in 1..3) for(b in 1..3) for(c in 1..3) add(a + b + c) }
-            .groupingBy { it }
-            .eachCount()
-            .mapValues { (_, value) -> value.toBigInteger() }
-
-        val placeCount = buildMap {
+        val placeMapper = buildMap {
+            val diceCount = buildList{ for(a in 1..3) for(b in 1..3) for(c in 1..3) add(a + b + c) }
+                .groupingBy { it }
+                .eachCount()
+                .mapValues { (_, value) -> value.toBigInteger() }
             for(place in 1..10)
                 put(place, diceCount.map { (sum, count) -> (place + sum - 1) % 10 + 1 to count}.sortedByDescending { it.first })
         }
@@ -48,7 +47,7 @@ object Day21 : Challenge() {
             fun calculateWin(state: State): Wins = getOrPut(state) {
                 if(state.inactiveScore >= 100)
                     return if(state.player) ZERO to ONE else ONE to ZERO
-                placeCount.getValue(state.activePlace).fold (ZERO to ZERO){ winnings, (newPlace, amount) ->
+                placeMapper.getValue(state.activePlace).fold (ZERO to ZERO){ winnings, (newPlace, amount) ->
                     winnings + calculateWin(
                         State(
                             activePlace = state.inactivePlace,
