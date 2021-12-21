@@ -36,7 +36,9 @@ object Day21 : Challenge() {
         }
     }
 
-    override fun part2(): BigInteger {
+
+
+    override fun part2(): Any? {
         val placeMapper = buildMap {
             val diceCount = buildList { for (a in 1..3) for (b in 1..3) for (c in 1..3) add(a + b + c) }
                 .groupingBy { it }.eachCount().mapValues { (_, value) -> value.toBigInteger() }
@@ -45,7 +47,7 @@ object Day21 : Challenge() {
         }
         buildMap<State, Wins>(10 * 10 * MAXSCORE * MAXSCORE) {
             fun calc(state: State): Wins = getOrPut(state) {
-                if (state.score2 >= MAXSCORE) ONE to ZERO
+                if (state.score2 >= MAXSCORE) ZERO to ONE
                 else placeMapper.getValue(state.place1).fold(ZERO to ZERO) { wins, (newPlace, amount) ->
                     wins + calc(
                         State(
@@ -57,7 +59,7 @@ object Day21 : Challenge() {
                     ) * amount
                 }.let { it.second to it.first }
             }
-            return calc(State(PLAYER1POSITION, PLAYER2POSITION, 0, 0)).let { (s1, s2) -> maxOf(s1, s2) }
+            return calc(State(PLAYER1POSITION, PLAYER2POSITION, 0, 0)).let { maxOf(it.first, it.second) }
         }
     }
 }
