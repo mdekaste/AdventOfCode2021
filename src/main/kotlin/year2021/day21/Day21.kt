@@ -1,9 +1,8 @@
 package year2021.day21
 
 import Challenge
-import java.math.BigInteger
 
-fun main() = Day21.printSolutions()
+fun main() = Day21.printMeasure(100)
 
 
 object Day21 : Challenge() {
@@ -32,16 +31,19 @@ object Day21 : Challenge() {
     }
 
     override fun part2(): Any? {
-        val diceCount = (0 until 27).map { it.toString(3) }.groupingBy { it.map(Char::digitToInt).sum() + 3 }.eachCount()
+        val diceCount = (0 until 27)
+            .map { it.toString(3) }
+            .groupingBy { it.map(Char::digitToInt).sum() + 3 }
+            .eachCount()
         val placeCount = (1..10).associateBy({it}, { place ->
             diceCount.map { (sum, count) ->
                 (place + sum - 1) % 10 + 1 to count
             }.sortedByDescending { it.first }
         })
-        val winMap = mutableMapOf<State, Wins>()
-        fun calculateWin(state: State): Wins = winMap.getOrPut(state) {
+        val memoid = mutableMapOf<State, Wins>()
+        fun calculateWin(state: State): Wins = memoid.getOrPut(state) {
             if(state.inactiveScore >= 21)
-                return if(state.player1) 0L to 1L else 1L to 0L
+                return if(state.player) 0L to 1L else 1L to 0L
             placeCount.getValue(state.activePlace).fold (0L to 0L){ winnings, (newPlace, amount) ->
                 winnings + calculateWin(
                     State(
@@ -49,15 +51,13 @@ object Day21 : Challenge() {
                         inactivePlace = newPlace,
                         activeScore = state.inactiveScore,
                         inactiveScore = state.activeScore + newPlace,
-                        player1 = !state.player1
+                        player = !state.player
                     )
                 ) * amount
             }
         }
         return calculateWin(State(p1Pos, p2Pos,0,0, true)).let { maxOf(it.first, it.second) }
     }
-
-
 }
 
 typealias Wins = Pair<Long, Long>
@@ -80,6 +80,6 @@ data class State(
     val inactivePlace: Int,
     val activeScore: Int,
     val inactiveScore: Int,
-    val player1: Boolean
+    val player: Boolean
 )
 
