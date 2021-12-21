@@ -4,13 +4,16 @@ import Challenge
 import java.math.BigInteger
 import java.math.BigInteger.ONE
 import java.math.BigInteger.ZERO
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTime
 
-fun main() = Day21.printMeasure(1)
-
+@OptIn(ExperimentalTime::class)
+fun main() = measureTime { Day21.printSolutions() }.let(::println)
 
 object Day21 : Challenge() {
     const val PLAYER1POSITION = 8
     const val PLAYER2POSITION = 4
+    const val MAXSCORE = 21
     val parsed = input
 
     override fun part1(): Any? {
@@ -35,32 +38,27 @@ object Day21 : Challenge() {
 
     override fun part2(): BigInteger {
         val placeMapper = buildMap {
-            val diceCount = buildList{ for(a in 1..3) for(b in 1..3) for(c in 1..3) add(a + b + c) }
-                .groupingBy { it }
-                .eachCount()
-                .mapValues { (_, value) -> value.toBigInteger() }
-            for(place in 1..10)
-                put(place, diceCount.map { (sum, count) -> (place + sum - 1) % 10 + 1 to count}.sortedByDescending { it.first })
+            val diceCount = buildList { for (a in 1..3) for (b in 1..3) for (c in 1..3) add(a + b + c) }
+                .groupingBy { it }.eachCount().mapValues { (_, value) -> value.toBigInteger() }
+            for (place in 1..10)
+                put(place, diceCount.map { (sum, count) -> (place + sum - 1) % 10 + 1 to count }.sortedByDescending { it.first })
         }
-
-        return buildMap<State, Wins> {
-            fun calculateWin(state: State): Wins = getOrPut(state) {
-                if(state.inactiveScore >= 100)
-                    return if(state.player) ZERO to ONE else ONE to ZERO
-                placeMapper.getValue(state.activePlace).fold (ZERO to ZERO){ winnings, (newPlace, amount) ->
-                    winnings + calculateWin(
+        buildMap<State, Wins>(10 * 10 * MAXSCORE * MAXSCORE) {
+            fun calc(state: State): Wins = getOrPut(state) {
+                if (state.score2 >= MAXSCORE) ONE to ZERO
+                else placeMapper.getValue(state.place1).fold(ZERO to ZERO) { wins, (newPlace, amount) ->
+                    wins + calc(
                         State(
-                            activePlace = state.inactivePlace,
-                            inactivePlace = newPlace,
-                            activeScore = state.inactiveScore,
-                            inactiveScore = state.activeScore + newPlace,
-                            player = !state.player
+                            place1 = state.place2,
+                            place2 = newPlace,
+                            score1 = state.score2,
+                            score2 = state.score1 + newPlace
                         )
                     ) * amount
-                }
+                }.let { it.second to it.first }
             }
-            calculateWin(State(PLAYER1POSITION, PLAYER2POSITION,0,0, true))
-        }.values.last().let { maxOf(it.first, it.second) }
+            return calc(State(PLAYER1POSITION, PLAYER2POSITION, 0, 0)).let { (s1, s2) -> maxOf(s1, s2) }
+        }
     }
 }
 
@@ -69,11 +67,10 @@ operator fun Wins.plus(o: Wins) = first + o.first to second + o.second
 operator fun Wins.times(o: BigInteger) = first * o to second * o
 
 data class State(
-    val activePlace: Int,
-    val inactivePlace: Int,
-    val activeScore: Int,
-    val inactiveScore: Int,
-    val player: Boolean
+    val place1: Int,
+    val place2: Int,
+    val score1: Int,
+    val score2: Int,
 )
 
 class Die {
@@ -81,10 +78,8 @@ class Die {
     var nextRoll = 1
     fun roll(): Int {
         val toReturn = nextRoll
-        nextRoll = (nextRoll  % 100) + 1
+        nextRoll = (nextRoll % 100) + 1
         dieRolls++
         return toReturn
     }
 }
-
-
