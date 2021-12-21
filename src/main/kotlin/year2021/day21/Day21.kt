@@ -1,19 +1,22 @@
 package year2021.day21
 
 import Challenge
+import java.math.BigInteger
+import java.math.BigInteger.ONE
+import java.math.BigInteger.ZERO
 
-fun main() = Day21.printMeasure(100)
+fun main() = Day21.printMeasure(1)
 
 
 object Day21 : Challenge() {
-    val p1Pos = 8
-    val p2Pos = 4
+    const val PLAYER1POSITION = 8
+    const val PLAYER2POSITION = 4
     val parsed = input
 
     override fun part1(): Any? {
         val die = Die()
-        var p1 = p1Pos
-        var p2 = p2Pos
+        var p1 = PLAYER1POSITION
+        var p2 = PLAYER2POSITION
         var p1Score = 0
         var p2Score = 0
         while (true) {
@@ -30,39 +33,49 @@ object Day21 : Challenge() {
         }
     }
 
-    override fun part2(): Any? {
-        val diceCount = (0 until 27)
-            .map { it.toString(3) }
-            .groupingBy { it.map(Char::digitToInt).sum() + 3 }
+    override fun part2(): BigInteger {
+        val diceCount = buildList{ for(a in 1..3) for(b in 1..3) for(c in 1..3) add(a + b + c) }
+            .groupingBy { it }
             .eachCount()
-        val placeCount = (1..10).associateBy({it}, { place ->
-            diceCount.map { (sum, count) ->
-                (place + sum - 1) % 10 + 1 to count
-            }.sortedByDescending { it.first }
-        })
-        val memoid = mutableMapOf<State, Wins>()
-        fun calculateWin(state: State): Wins = memoid.getOrPut(state) {
-            if(state.inactiveScore >= 21)
-                return if(state.player) 0L to 1L else 1L to 0L
-            placeCount.getValue(state.activePlace).fold (0L to 0L){ winnings, (newPlace, amount) ->
-                winnings + calculateWin(
-                    State(
-                        activePlace = state.inactivePlace,
-                        inactivePlace = newPlace,
-                        activeScore = state.inactiveScore,
-                        inactiveScore = state.activeScore + newPlace,
-                        player = !state.player
-                    )
-                ) * amount
-            }
+            .mapValues { (_, value) -> value.toBigInteger() }
+
+        val placeCount = buildMap {
+            for(place in 1..10)
+                put(place, diceCount.map { (sum, count) -> (place + sum - 1) % 10 + 1 to count}.sortedByDescending { it.first })
         }
-        return calculateWin(State(p1Pos, p2Pos,0,0, true)).let { maxOf(it.first, it.second) }
+
+        return buildMap<State, Wins> {
+            fun calculateWin(state: State): Wins = getOrPut(state) {
+                if(state.inactiveScore >= 100)
+                    return if(state.player) ZERO to ONE else ONE to ZERO
+                placeCount.getValue(state.activePlace).fold (ZERO to ZERO){ winnings, (newPlace, amount) ->
+                    winnings + calculateWin(
+                        State(
+                            activePlace = state.inactivePlace,
+                            inactivePlace = newPlace,
+                            activeScore = state.inactiveScore,
+                            inactiveScore = state.activeScore + newPlace,
+                            player = !state.player
+                        )
+                    ) * amount
+                }
+            }
+            calculateWin(State(PLAYER1POSITION, PLAYER2POSITION,0,0, true))
+        }.values.last().let { maxOf(it.first, it.second) }
     }
 }
 
-typealias Wins = Pair<Long, Long>
+typealias Wins = Pair<BigInteger, BigInteger>
 operator fun Wins.plus(o: Wins) = first + o.first to second + o.second
-operator fun Wins.times(o: Int) = first * o to second * o
+operator fun Wins.times(o: BigInteger) = first * o to second * o
+
+data class State(
+    val activePlace: Int,
+    val inactivePlace: Int,
+    val activeScore: Int,
+    val inactiveScore: Int,
+    val player: Boolean
+)
 
 class Die {
     var dieRolls = 0
@@ -75,11 +88,4 @@ class Die {
     }
 }
 
-data class State(
-    val activePlace: Int,
-    val inactivePlace: Int,
-    val activeScore: Int,
-    val inactiveScore: Int,
-    val player: Boolean
-)
 
