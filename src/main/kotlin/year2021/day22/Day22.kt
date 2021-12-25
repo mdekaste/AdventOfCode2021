@@ -1,9 +1,6 @@
 package year2021.day22
 
 import Challenge
-import java.math.BigInteger
-import java.util.*
-import kotlin.math.abs
 
 fun main() = Day22.printSolutions()
 
@@ -12,12 +9,12 @@ object Day22 : Challenge() {
     override fun part1(): Any? {
         val cubes = buildMap {
             for (cube in parsed) {
-                if (cube.xRange.first < -50 || cube.xRange.last > 50 || cube.yRange.first < -50 || cube.yRange.last > 50 ||
-                    cube.zRange.first < -50 || cube.zRange.last > 50
+                if (cube.xMin < -50 || cube.xMax > 50 || cube.yMin < -50 || cube.yMax > 50 ||
+                    cube.zMin < -50 || cube.zMax > 50
                 ) continue
-                for (x in cube.xRange) {
-                    for (y in cube.yRange) {
-                        for (z in cube.zRange) {
+                for (x in cube.xMin until cube.xMax) {
+                    for (y in cube.yMin until cube.yMax) {
+                        for (z in cube.zMin until cube.zMax) {
                             put(Triple(x, y, z), cube.on)
                         }
                     }
@@ -25,25 +22,26 @@ object Day22 : Challenge() {
             }
         }
 
-        return cubes.count { it.value } to "brute force"
+        return cubes.count { it.value }
     }
 
     override fun part2(): Any? {
-        val xSteps = parsed.flatMap { listOf(it.xRange.first, it.xRange.last + 1) }.toSortedSet()
-        val ySteps = parsed.flatMap { listOf(it.yRange.first, it.yRange.last + 1) }.toSortedSet()
-        val zSteps = parsed.flatMap { listOf(it.zRange.first, it.zRange.last + 1) }.toSortedSet()
-        val xAreas = xSteps.zipWithNext().map { (a, b) -> abs(b - a) }
-        val yAreas = ySteps.zipWithNext().map { (a, b) -> abs(b - a) }
-        val zAreas = zSteps.zipWithNext().map { (a, b) -> abs(b - a) }
+        val xSteps = parsed.flatMap { listOf(it.xMin, it.xMax) }.toSortedSet()
+        val ySteps = parsed.flatMap { listOf(it.yMin, it.yMax) }.toSortedSet()
+        val zSteps = parsed.flatMap { listOf(it.zMin, it.zMax) }.toSortedSet()
+        val xAreas = xSteps.zipWithNext().map { (a, b) -> b - a.toLong() }
+        val yAreas = ySteps.zipWithNext().map { (a, b) -> b - a.toLong() }
+        val zAreas = zSteps.zipWithNext().map { (a, b) -> b - a.toLong() }
 
         val array = Array(xSteps.size) { Array(ySteps.size) { Array(zSteps.size) { false } } }
+
         for (input in parsed) {
-            val xLowerIndex = xSteps.indexOf(input.xRange.first)
-            val xUpperIndex = xSteps.indexOf(input.xRange.last + 1)
-            val yLowerIndex = ySteps.indexOf(input.yRange.first)
-            val yUpperIndex = ySteps.indexOf(input.yRange.last + 1)
-            val zLowerIndex = zSteps.indexOf(input.zRange.first)
-            val zUpperIndex = zSteps.indexOf(input.zRange.last + 1)
+            val xLowerIndex = xSteps.indexOf(input.xMin)
+            val xUpperIndex = xSteps.indexOf(input.xMax)
+            val yLowerIndex = ySteps.indexOf(input.yMin)
+            val yUpperIndex = ySteps.indexOf(input.yMax)
+            val zLowerIndex = zSteps.indexOf(input.zMin)
+            val zUpperIndex = zSteps.indexOf(input.zMax)
             for (x in xLowerIndex until xUpperIndex) {
                 for (y in yLowerIndex until yUpperIndex) {
                     for (z in zLowerIndex until zUpperIndex) {
@@ -53,86 +51,45 @@ object Day22 : Challenge() {
             }
         }
 
-
-//        val lengthX = xSteps.last() - xSteps.first() + 1
-//        val lengthY = ySteps.last() - ySteps.first() + 1
-//        val lengthZ = zSteps.last() - zSteps.first() + 1
-//        var area = (lengthX * lengthY * lengthZ).toBigInteger()
-        var area = BigInteger.ZERO
-        var offVoxels = 0
-        var onVoxels = 0
+        var area = 0L
         for (x in array.indices) {
             for (y in array[x].indices) {
                 for (z in array[x][y].indices) {
                     if (array[x][y][z]) {
-                        onVoxels++
                         var xLength = xAreas[x]
                         var yLength = yAreas[y]
                         var zLength = zAreas[z]
-
-                        area += (xLength * yLength * zLength).toBigInteger()
-                    } else {
-                        offVoxels++
+                        area += xLength * yLength * zLength
                     }
                 }
             }
         }
-        println(offVoxels)
-        println(onVoxels)
-        return area to "slim"
-//        for(input in parsed) {
-//            println(input)
-//            val xMinSet = xMap.headMap(input.xRange.first).values.last()
-//            xMap.put(input.xRange.first, xMinSet.mapValues { it.value.toSortedMap() }.toSortedMap())
-//            val xMaxSet = xMap.headMap(input.xRange.last).values.last()
-//            xMap.put(input.xRange.last, xMaxSet.mapValues { it.value.toSortedMap() }.toSortedMap())
-//            for (yMap in xMap.values) {
-//                val yMinSet = yMap.headMap(input.yRange.first).values.last()
-//                yMap.put(input.yRange.first, yMinSet.toSortedMap())
-//                val yMaxSet = yMap.headMap(input.yRange.last).values.last()
-//                yMap.put(input.yRange.last, yMaxSet.toSortedMap())
-//                for (zMap in yMap.values) {
-//                    val zMinSet = zMap.headMap(input.zRange.first).values.last()
-//                    zMap.put(input.zRange.first, zMinSet.copy())
-//                    val zMaxSet = zMap.headMap(input.zRange.last).values.last()
-//                    zMap.put(input.zRange.last, zMaxSet.copy())
-//                }
-//            }
-//            xMap.subMap(input.xRange.first, input.xRange.last + 1).values.forEach {
-//                it.subMap(input.yRange.first, input.yRange.last + 1).values.forEach {
-//                    it.subMap(input.zRange.first, input.zRange.last + 1).values.forEach {
-//                        it.value = input.on
-//                    }
-//                }
-//            }
-//        }
-        return null
+        return area
     }
 }
 
-data class MutableBoolean(
-    var value: Boolean = false
-)
-
-class World(
-    val xMap: XMap = sortedMapOf()
-)
-
-typealias ZMap = SortedMap<Int, MutableBoolean>
-typealias YMap = SortedMap<Int, ZMap>
-typealias XMap = SortedMap<Int, YMap>
-
 data class Input(
     val on: Boolean,
-    val xRange: IntRange,
-    val yRange: IntRange,
-    val zRange: IntRange
+    val xMin: Int,
+    val xMax: Int,
+    val yMin: Int,
+    val yMax: Int,
+    val zMin: Int,
+    val zMax: Int
 ) {
     companion object {
         fun of(input: String): Input {
-            val on = input[1] == 'n'
-            val ints = input.substringAfter(" ").split(",").flatMap { it.substringAfter("=").split("..").map(String::toInt) }
-            return Input(on, ints[0]..ints[1], ints[2]..ints[3], ints[4]..ints[5])
+            val (type, coords) = input.split(' ')
+            val on = when (type) {
+                "on" -> true
+                "off" -> false
+                else -> error("input error on on/off attribute: $type")
+            }
+            val (xCoords, yCoords, zCoords) = coords.split(',').map {
+                val (min, max) = it.substringAfter('=').split("..").map(String::toInt)
+                min to max + 1
+            }
+            return Input(on, xCoords.first, xCoords.second, yCoords.first, yCoords.second, zCoords.first, zCoords.second)
         }
     }
 }
