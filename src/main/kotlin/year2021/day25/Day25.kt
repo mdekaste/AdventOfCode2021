@@ -42,8 +42,8 @@ object Day25 : Challenge() {
 }
 
 class Node(southGet: () -> Node, eastGet: () -> Node) {
-    val south by lazy { southGet() }
-    val east by lazy { eastGet() }
+    val south by lazy(southGet)
+    val east by lazy(eastGet)
     var seaCucumber: SeaCucumber? = null
 }
 
