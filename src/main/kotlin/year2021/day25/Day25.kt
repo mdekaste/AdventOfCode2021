@@ -2,26 +2,24 @@ package year2021.day25
 
 import Challenge
 
-fun main() = Day25.printSolutions()
+fun main() = Day25.printMeasure(50)
 
-object Day25 : Challenge() {
+object Day25 : Challenge("--- Day 25: Sea Cucumber ---") {
     override fun part1(): Int {
         val graph: Map<Pair<Int, Int>, Node> = buildMap {
-            val lines = input.lines()
-            for (y in lines.indices) {
-                for (x in lines[y].indices) {
-                    val id = y to x
+            for ((y, line) in input.lines().withIndex()) {
+                for ((x, char) in line.withIndex()) {
                     val south = { get(y + 1 to x) ?: getValue(0 to x) }
                     val east = { get(y to x + 1) ?: getValue(y to 0) }
                     val node = Node(south, east).apply {
-                        seaCucumber = when (lines[y][x]) {
+                        seaCucumber = when (char) {
                             '>' -> SeaCucumber(this, true)
                             'v' -> SeaCucumber(this, false)
                             '.' -> null
                             else -> error("input error")
                         }
                     }
-                    put(id, node)
+                    put(y to x, node)
                 }
             }
         }

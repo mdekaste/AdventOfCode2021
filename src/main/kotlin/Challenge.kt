@@ -1,8 +1,6 @@
 import java.io.File
 import kotlin.system.measureNanoTime
-import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
-import kotlin.time.measureTime
 import kotlin.time.measureTimedValue
 
 abstract class Challenge(
