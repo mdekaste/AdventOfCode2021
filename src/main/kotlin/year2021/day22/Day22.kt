@@ -29,9 +29,6 @@ object Day22 : Challenge() {
         val xSteps = parsed.flatMap { listOf(it.xMin, it.xMax) }.toSortedSet()
         val ySteps = parsed.flatMap { listOf(it.yMin, it.yMax) }.toSortedSet()
         val zSteps = parsed.flatMap { listOf(it.zMin, it.zMax) }.toSortedSet()
-        val xAreas = xSteps.zipWithNext().map { (a, b) -> b - a.toLong() }
-        val yAreas = ySteps.zipWithNext().map { (a, b) -> b - a.toLong() }
-        val zAreas = zSteps.zipWithNext().map { (a, b) -> b - a.toLong() }
 
         val array = Array(xSteps.size) { Array(ySteps.size) { Array(zSteps.size) { false } } }
 
@@ -42,28 +39,22 @@ object Day22 : Challenge() {
             val yUpperIndex = ySteps.indexOf(input.yMax)
             val zLowerIndex = zSteps.indexOf(input.zMin)
             val zUpperIndex = zSteps.indexOf(input.zMax)
-            for (x in xLowerIndex until xUpperIndex) {
-                for (y in yLowerIndex until yUpperIndex) {
-                    for (z in zLowerIndex until zUpperIndex) {
+            for (x in xLowerIndex until xUpperIndex)
+                for (y in yLowerIndex until yUpperIndex)
+                    for (z in zLowerIndex until zUpperIndex)
                         array[x][y][z] = input.on
-                    }
-                }
-            }
         }
 
+        val xAreas = xSteps.zipWithNext().map { (a, b) -> b - a.toLong() }
+        val yAreas = ySteps.zipWithNext().map { (a, b) -> b - a.toLong() }
+        val zAreas = zSteps.zipWithNext().map { (a, b) -> b - a.toLong() }
+
         var area = 0L
-        for (x in array.indices) {
-            for (y in array[x].indices) {
-                for (z in array[x][y].indices) {
-                    if (array[x][y][z]) {
-                        var xLength = xAreas[x]
-                        var yLength = yAreas[y]
-                        var zLength = zAreas[z]
-                        area += xLength * yLength * zLength
-                    }
-                }
-            }
-        }
+        for (x in array.indices)
+            for (y in array[x].indices)
+                for (z in array[x][y].indices)
+                    if (array[x][y][z])
+                        area += xAreas[x] * yAreas[y] * zAreas[z]
         return area
     }
 }
