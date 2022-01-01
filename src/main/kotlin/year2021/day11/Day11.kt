@@ -11,7 +11,7 @@ object Day11 : Challenge("--- Day 11: Dumbo Octopus ---") {
 
     val simulation = sequence {
         val octopuses = Octopus.parseInput(input)
-        while(true){
+        while (true) {
             yield(octopuses)
             octopuses.forEach(Octopus::brighten)
             octopuses.forEach(Octopus::flash)
@@ -19,14 +19,14 @@ object Day11 : Challenge("--- Day 11: Dumbo Octopus ---") {
     }.withIndex()
 }
 
-interface Octopus{
+interface Octopus {
     val brightness: Int
     val flashCount: Int
     fun brighten()
     fun flash()
 
-    companion object{
-        fun parseInput(input: String) : Collection<Octopus> = buildMap<Pair<Int,Int>, Octopus> {
+    companion object {
+        fun parseInput(input: String): Collection<Octopus> = buildMap<Pair<Int, Int>, Octopus> {
             input.lines().forEachIndexed { y, line ->
                 line.forEachIndexed { x, c ->
                     put(y to x, OctopusImpl(y, x, c.digitToInt(), this))
@@ -35,23 +35,24 @@ interface Octopus{
         }.values
     }
 
-    private class OctopusImpl(y : Int, x: Int, override var brightness: Int, grid: Map<Pair<Int, Int>, Octopus>): Octopus{
+    private class OctopusImpl(y: Int, x: Int, override var brightness: Int, grid: Map<Pair<Int, Int>, Octopus>) : Octopus {
         override var flashCount: Int = 0
         val neighbours by lazy {
-            listOf( y - 1   to x - 1, y - 1 to x, y - 1 to x + 1,
-                y       to x - 1, null      , y     to x + 1,
-                y + 1   to x - 1, y + 1 to x, y + 1 to x + 1
+            listOf(
+                y - 1 to x - 1, y - 1 to x, y - 1 to x + 1,
+                y to x - 1, null, y to x + 1,
+                y + 1 to x - 1, y + 1 to x, y + 1 to x + 1
             ).mapNotNull(grid::get)
         }
 
-        override fun brighten(){
-            if(++brightness == 10){
+        override fun brighten() {
+            if (++brightness == 10) {
                 neighbours.forEach(Octopus::brighten)
             }
         }
 
         override fun flash() {
-            if(brightness > 9){
+            if (brightness > 9) {
                 flashCount++
                 brightness = 0
             }

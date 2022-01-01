@@ -8,7 +8,7 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
 @OptIn(ExperimentalTime::class)
-fun main() = measureTime { Day21.printSolutions() }.let(::println)
+fun main() = Day21.printMeasure(50)
 
 object Day21 : Challenge() {
     const val PLAYER1POSITION = 8
@@ -35,8 +35,6 @@ object Day21 : Challenge() {
                 return p1Score * die.dieRolls
         }
     }
-
-
 
     override fun part2(): Any? {
         val placeMapper = buildMap {
